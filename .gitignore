@@ -1,0 +1,60 @@
+test-results
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Paraglide
+src/lib/paraglide
+
+# Electron build outputs
+/dist
+/release
+/out
+/electron-dist
+/desktop-builds
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+*.blockmap
+*.yaml
+*.yml
+
+# Electron cache and temp files
+/electron/cache
+/electron/temp
+/.electron-builder-cache
+
+# OS specific installers
+*.msi
+*.pkg
+*.snap
+
+# Auto-generated files
+/app-update.yml
+/latest.yml
+/latest-mac.yml
+/latest-linux.yml
