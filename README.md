@@ -101,7 +101,17 @@ docker run -p 8000:8000 amazon/dynamodb-local
 
 ## 📸 Screenshots
 
-[Add screenshots here showing the main interface, connection form, table view, etc.]
+### Main Interface - Multi-Connection Tab View
+![DynamoDB Manager Main Interface](screen/capture_001.png)
+
+**What you see:**
+- **Left Panel**: Multiple connections (Local DynamoDB + AWS) with connection status
+- **Center Panel**: Table explorer showing all available tables with item counts
+- **Right Panel**: Data viewer with dual modes (Table/JSON) and smart pagination
+- **Top Tabs**: Multi-connection workspace - work with several databases simultaneously
+- **Features Visible**: Search/filter, export options, pagination controls, responsive table view
+
+This screenshot demonstrates the complete workflow: connecting to both local Docker DynamoDB and AWS, browsing tables, and viewing data with the professional Studio 3T-inspired interface.
 
 ## 🏗️ Architecture
 
