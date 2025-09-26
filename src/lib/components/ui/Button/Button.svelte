@@ -22,7 +22,7 @@
 		/** @type {ButtonType} Tipo de botón HTML */
 		type = /** @type {ButtonType} */ ('button'),
 		/** @type {(() => void) | undefined} Callback al hacer clic */
-		onclick,
+		onclick = () => {},
 		/** Contenido del botón */
 		children,
 		...props

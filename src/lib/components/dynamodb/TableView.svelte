@@ -3,7 +3,8 @@
  * Muestra datos en una tabla HTML responsive
 -->
 <script>
-	import { Copy, MapPin, SquarePen } from 'lucide-svelte';
+	import { Copy, MapPin, SquarePen, Edit3 } from 'lucide-svelte';
+	import InlineFieldEditor from '$lib/components/ui/InlineFieldEditor.svelte';
 
 	/**
 	 * @typedef {Object} Record
@@ -17,6 +18,8 @@
 		onEditRecord,
 		/** @type {((record: Object) => void) | undefined} Callback para eliminar registro */
 		onDeleteRecord,
+		/** @type {((record: Object, field: string, value: any) => void) | undefined} Callback para actualizar un campo específico */
+		onUpdateField,
 		/** @type {Object | null} Información de la tabla DynamoDB */
 		tableInfo = null
 	} = $props();
@@ -170,6 +173,66 @@
 		const numericCount = values.filter((/** @type {any} */ v) => typeof v === 'number').length;
 		return numericCount > values.length * 0.7; // 70% o más son números
 	}
+
+	// Estado para controlar qué celda está en edición
+	let editingCell = $state(null);
+
+	/**
+	 * Inicia la edición inline de un campo
+	 * @param {number} recordIndex - Índice del registro
+	 * @param {string} column - Nombre de la columna
+	 * @param {any} value - Valor actual
+	 */
+	function startInlineEdit(recordIndex, column, value) {
+		// Solo permitir edición de valores primitivos
+		if (typeof value === 'object' && value !== null) {
+			return;
+		}
+		editingCell = { recordIndex, column, value };
+	}
+
+	/**
+	 * Acepta el cambio en la edición inline
+	 * @param {any} newValue - Nuevo valor
+	 */
+	function acceptInlineEdit(newValue) {
+		if (editingCell && onUpdateField) {
+			const record = records[editingCell.recordIndex];
+			onUpdateField(record, editingCell.column, newValue);
+		}
+		editingCell = null;
+	}
+
+	/**
+	 * Cancela la edición inline
+	 */
+	function cancelInlineEdit() {
+		editingCell = null;
+	}
+
+	/**
+	 * Determina si un valor es editable inline
+	 * @param {any} value - Valor a verificar
+	 * @returns {boolean}
+	 */
+	function isEditableInline(value) {
+		return value === null ||
+			   value === undefined ||
+			   typeof value === 'string' ||
+			   typeof value === 'number' ||
+			   typeof value === 'boolean';
+	}
+
+	/**
+	 * Obtiene el tipo de campo para el editor
+	 * @param {any} value - Valor del campo
+	 * @returns {'string' | 'number' | 'boolean'}
+	 */
+	function getFieldType(value) {
+		if (typeof value === 'number') return 'number';
+		if (typeof value === 'boolean') return 'boolean';
+		return 'string';
+	}
 </script>
 
 <div class="flex h-full flex-col gap-2">
@@ -255,34 +318,64 @@
 							{@const value = record[column]}
 							{@const formattedValue = formatValue(value)}
 							{@const valueClass = getValueType(value)}
+							{@const isEditing = editingCell?.recordIndex === index && editingCell?.column === column}
+							{@const canEditInline = isEditableInline(value) && onUpdateField}
 
 							<td
-								class="group p-2 text-sm whitespace-nowrap {valueClass} {isNumericColumn(column)
+								class="group relative p-2 text-sm whitespace-nowrap {valueClass} {isNumericColumn(column)
 									? 'text-right'
 									: ''}"
 							>
 								<div class="flex items-center gap-2 {isNumericColumn(column) ? 'justify-end' : ''}">
-									<button
-										class="cursor-pointer rounded px-2 py-1 transition-colors hover:bg-gray-100"
-										title="Clic para copiar: {typeof value === 'object'
-											? JSON.stringify(value)
-											: String(value)}"
-										onclick={() => copyToClipboard(value)}
-									>
-										{formattedValue}
-									</button>
-
-									<!-- Icono de copia -->
-									{#if value !== null && value !== undefined}
+									{#if isEditing}
+										<!-- Editor inline activo -->
+										<InlineFieldEditor
+											bind:value={editingCell.value}
+											fieldType={getFieldType(value)}
+											onAccept={() => acceptInlineEdit(editingCell.value)}
+											onCancel={cancelInlineEdit}
+											position="bottom"
+										/>
+										<span class="rounded bg-blue-50 px-2 py-1 text-blue-600">
+											{formattedValue}
+										</span>
+									{:else}
+										<!-- Valor normal -->
 										<button
-											type="button"
-											class="text-gray-400 opacity-0 transition-all group-hover:opacity-100 hover:text-gray-600 hover:opacity-100"
+											class="cursor-pointer rounded px-2 py-1 transition-colors hover:bg-gray-100"
+											title="Clic para copiar: {typeof value === 'object'
+												? JSON.stringify(value)
+												: String(value)}"
 											onclick={() => copyToClipboard(value)}
-											title="Copiar valor"
 										>
-											<Copy size={12} />
-											<span class="sr-only">Copiar valor</span>
+											{formattedValue}
 										</button>
+
+										<!-- Botón de edición inline para campos simples -->
+										{#if canEditInline}
+											<button
+												type="button"
+												class="text-blue-500 opacity-0 transition-all group-hover:opacity-100 hover:text-blue-700"
+												onclick={() => startInlineEdit(index, column, value)}
+												title="Editar campo"
+											>
+												<Edit3 size={12} />
+												<span class="sr-only">Editar campo</span>
+											</button>
+										{/if}
+
+										<!-- Icono de copia -->
+										{#if value !== null && value !== undefined}
+											<button
+												type="button"
+												class="text-gray-400 opacity-0 transition-all group-hover:opacity-100 hover:text-gray-600 hover:opacity-100"
+												onclick={() => copyToClipboard(value)}
+												title="Copiar valor"
+											>
+												<Copy size={12} />
+												<span class="sr-only">Copiar valor</span>
+											</button>
+										{/if}
 									{/if}
 								</div>
 							</td>

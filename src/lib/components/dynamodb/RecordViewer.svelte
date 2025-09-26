@@ -394,6 +394,42 @@
 	}
 
 	/**
+	 * Actualiza un campo específico de un registro
+	 * @param {Object} record - Registro completo
+	 * @param {string} field - Campo a actualizar
+	 * @param {any} value - Nuevo valor
+	 */
+	async function handleUpdateField(record, field, value) {
+		if (!$isConnected || !tableName) return;
+
+		try {
+			// Crear el registro actualizado completo
+			const updatedRecord = {
+				...record,
+				[field]: value
+			};
+
+			// Usar putItem en lugar de updateItem ya que enviamos el registro completo
+			const response = await dynamoDbApi.putItem(tableName, updatedRecord);
+
+			if (response.success) {
+				// Actualizar el registro localmente
+				const recordIndex = records.findIndex(
+					(r) => JSON.stringify(extractKeys(r)) === JSON.stringify(extractKeys(record))
+				);
+
+				if (recordIndex !== -1) {
+					records[recordIndex] = updatedRecord;
+				}
+			} else {
+				console.error('Error actualizando campo:', response.error);
+			}
+		} catch (err) {
+			console.error('Error actualizando campo:', err);
+		}
+	}
+
+	/**
 	 * Obtiene una representación legible de las claves primarias
 	 * @param {Object} record - Registro
 	 * @returns {string} Descripción de las claves
@@ -581,7 +617,13 @@
 		<!-- Visualizador de datos -->
 		<div class="flex-1 overflow-hidden">
 			{#if viewMode === 'table'}
-				<TableView {records} onEditRecord={handleEditRecord} onDeleteRecord={handleDeleteRecord} tableInfo={tableSchema} />
+				<TableView
+					{records}
+					onEditRecord={handleEditRecord}
+					onDeleteRecord={handleDeleteRecord}
+					onUpdateField={handleUpdateField}
+					tableInfo={tableSchema}
+				/>
 			{:else}
 				<JsonView {records} onEditRecord={handleEditRecord} onDeleteRecord={handleDeleteRecord} />
 			{/if}

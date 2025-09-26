@@ -41,7 +41,7 @@
 
 	/** Clases base del input */
 	const baseClasses =
-		'block w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors';
+		'block w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors text-gray-900';
 
 	/** Clases según estado del input */
 	const stateClasses = $derived(() => {

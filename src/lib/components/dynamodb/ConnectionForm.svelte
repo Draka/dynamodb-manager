@@ -18,8 +18,8 @@
 	 * @typedef {import('../../services/aws-config.js').AWSConnection} AWSConnection
 	 */
 
-	/** @type {AWSConnection | null} Conexión a editar (null para nueva) */
 	let {
+		/** @type {AWSConnection | null} Conexión a editar (null para nueva) */
 		connection = null,
 		/** @type {(() => void) | undefined} Callback al guardar exitosamente */
 		onsaved,
@@ -257,7 +257,7 @@
 </script>
 
 <form
-	class="space-y-6"
+	class="space-y-6 p-4"
 	onsubmit={(e) => {
 		e.preventDefault();
 		saveConnection();
@@ -335,7 +335,7 @@
 		<TextInput
 			bind:value={formData.accessKeyId}
 			label={m['connection.accessKeyId']()}
-			placeholder={m['connection.accessKeyIdPlaceholder']()}
+			placeholder=""
 			required
 			error={errors.accessKeyId}
 			help={m['connection.accessKeyIdHelp']()}
@@ -346,7 +346,7 @@
 			bind:value={formData.secretAccessKey}
 			type="password"
 			label={m['connection.secretAccessKey']()}
-			placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+			placeholder=""
 			required
 			error={errors.secretAccessKey}
 			help={m['connection.secretAccessKeyHelp']()}
@@ -369,7 +369,6 @@
 			onclick={testConnection}
 			disabled={isTesting || isSaving}
 			loading={isTesting}
-			class="flex-1"
 		>
 			{isTesting ? 'Probando...' : 'Probar Conexión'}
 		</Button>
@@ -379,7 +378,6 @@
 			variant="primary"
 			disabled={isSaving || isTesting || hasFormErrors()}
 			loading={isSaving}
-			class="flex-1"
 		>
 			{isSaving ? 'Guardando...' : actionButtonText}
 		</Button>

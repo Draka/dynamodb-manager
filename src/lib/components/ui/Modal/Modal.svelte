@@ -8,7 +8,7 @@
 
 	let {
 		/** @type {boolean} Si el modal está abierto */
-		open = false,
+		open = $bindable(false),
 		/** @type {string} Título del modal */
 		title = '',
 		/** @type {boolean} Si muestra botón de cerrar */
@@ -166,7 +166,7 @@
 			{#if title || closable}
 				<div class="flex items-center justify-between pb-4">
 					{#if title}
-						<h2 id="modal-title" class="text-lg font-semibold text-gray-900">
+						<h2 id="modal-title" class="px-4 text-lg font-semibold text-gray-900">
 							{title}
 						</h2>
 					{/if}

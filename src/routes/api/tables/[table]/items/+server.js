@@ -69,7 +69,7 @@ export async function PUT({ params, request, cookies }) {
 	try {
 		const tableName = params.table;
 		const requestBody = await request.json();
-		const { connectionId, key, updates } = requestBody;
+		const { connectionId, ...itemData } = requestBody;
 
 		// Obtener conexión específica por ID
 		let connection;
@@ -92,9 +92,9 @@ export async function PUT({ params, request, cookies }) {
 
 		const service = createDynamoDBService(connection);
 
-		// Para DynamoDB, necesitamos usar PutCommand con el item completo ya que es más simple
-		// que crear UpdateExpressions complejas para actualizaciones dinámicas
-		const result = await service.putItem(tableName, updates);
+		// Para actualizaciones, usamos PutCommand con el item completo
+		// El cliente debe enviar el registro completo actualizado
+		const result = await service.putItem(tableName, itemData);
 
 		await service.close();
 
