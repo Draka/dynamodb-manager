@@ -520,29 +520,29 @@
 	<!-- Header con controles -->
 	<div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
 		<div>
-			<h3 class="text-lg font-medium text-gray-900">
+			<h3 class="text-lg font-medium text-gray-900 dark:text-white">
 				Datos de {tableName}
 			</h3>
-			<p class="mt-1 text-sm text-gray-600">
+			<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
 				{totalItems} registros encontrados
 			</p>
 		</div>
 
 		<div class="flex items-center gap-3">
 			<!-- Toggle vista -->
-			<div class="flex rounded-lg bg-gray-100 p-1">
+			<div class="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
 				<button
 					class="rounded-md px-3 py-1 text-sm transition-colors {viewMode === 'table'
-						? 'bg-white text-gray-900 shadow-sm'
-						: 'text-gray-600 hover:text-gray-900'}"
+						? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+						: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
 					onclick={() => (viewMode = 'table')}
 				>
 					Tabla
 				</button>
 				<button
 					class="rounded-md px-3 py-1 text-sm transition-colors {viewMode === 'json'
-						? 'bg-white text-gray-900 shadow-sm'
-						: 'text-gray-600 hover:text-gray-900'}"
+						? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+						: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
 					onclick={() => (viewMode = 'json')}
 				>
 					JSON
@@ -564,7 +564,7 @@
 	</div>
 
 	<!-- Filtros de búsqueda -->
-	<div class="rounded-lg border border-gray-200 bg-gray-50 p-2">
+	<div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
 		<div class="flex flex-col gap-4 sm:flex-row">
 			<div class="flex-1">
 				<TextInput bind:value={searchTerm} placeholder="Buscar..." />
@@ -597,8 +597,8 @@
 	{:else if error}
 		<div class="py-12 text-center">
 			<AlertTriangle size={48} class="mx-auto text-red-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900">Error cargando datos</h3>
-			<p class="mt-1 text-sm text-red-600">{error}</p>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error cargando datos</h3>
+			<p class="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
 			<div class="mt-6">
 				<Button variant="primary" onclick={refreshData}>Reintentar</Button>
 			</div>
@@ -606,8 +606,8 @@
 	{:else if records.length === 0}
 		<div class="py-12 text-center">
 			<Archive size={48} class="mx-auto text-gray-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900">Sin registros</h3>
-			<p class="mt-1 text-sm text-gray-500">
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin registros</h3>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 				{searchTerm
 					? 'No se encontraron registros con los filtros aplicados.'
 					: 'Esta tabla no contiene registros.'}
@@ -632,9 +632,9 @@
 
 	<!-- Paginación y controles -->
 	{#if records.length > 0 && !loading}
-		<div class="flex flex-col items-center justify-between gap-4 border-t pt-4 sm:flex-row">
+		<div class="flex flex-col items-center justify-between gap-4 border-t border-gray-200 dark:border-gray-700 pt-4 sm:flex-row">
 			<div class="flex items-center gap-4">
-				<span class="text-sm text-gray-700">
+				<span class="text-sm text-gray-700 dark:text-gray-300">
 					Página {currentPage}
 				</span>
 				<Select
@@ -677,7 +677,7 @@
 <!-- Modal de confirmación de eliminación -->
 {#if deleteConfirmOpen}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70"
 		onclick={handleDeleteCancel}
 		onkeydown={(e) => {
 			if (e.key === 'Enter' || e.key === ' ') {
@@ -690,7 +690,7 @@
 		aria-label="Cerrar modal de confirmación"
 	>
 		<div
-			class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+			class="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => {
 				if (e.key === 'Enter' || e.key === ' ') {
@@ -708,20 +708,20 @@
 					<AlertTriangle size={24} class="text-red-600" />
 				</div>
 				<div class="flex-1">
-					<h3 class="text-lg font-medium text-gray-900">Confirmar Eliminación</h3>
-					<p class="text-sm text-gray-600">Esta acción no se puede deshacer</p>
+					<h3 class="text-lg font-medium text-gray-900 dark:text-white">Confirmar Eliminación</h3>
+					<p class="text-sm text-gray-600 dark:text-gray-300">Esta acción no se puede deshacer</p>
 				</div>
 			</div>
 
 			<!-- Contenido -->
 			<div class="mb-6">
-				<p class="mb-2 text-sm text-gray-700">
+				<p class="mb-2 text-sm text-gray-700 dark:text-gray-300">
 					¿Estás seguro de que deseas eliminar este registro?
 				</p>
-				<div class="rounded-md bg-gray-50 p-3">
+				<div class="rounded-md bg-gray-50 dark:bg-gray-700 p-3">
 					{#if deletingRecord}
-						<div class="mb-2 text-sm font-medium text-gray-700">Clave primaria del registro:</div>
-						<div class="font-mono text-sm text-gray-900">
+						<div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Clave primaria del registro:</div>
+						<div class="font-mono text-sm text-gray-900 dark:text-gray-100">
 							{getPrimaryKeyDescription(deletingRecord)}
 						</div>
 					{/if}
@@ -732,7 +732,7 @@
 			<div class="flex items-center justify-end gap-3">
 				<button
 					type="button"
-					class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+					class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 					onclick={handleDeleteCancel}
 					disabled={deleting}
 				>

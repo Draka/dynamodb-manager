@@ -57,6 +57,15 @@ export const themeMode = writable(getInitialTheme());
 // Store derivado del tema actual (resuelto)
 export const theme = writable(resolveTheme(getInitialTheme()));
 
+// Sincronizar themeMode changes con theme
+themeMode.subscribe((mode) => {
+	if (browser) {
+		const resolvedTheme = resolveTheme(mode);
+		theme.set(resolvedTheme);
+		applyThemeToDocument(resolvedTheme);
+	}
+});
+
 /**
  * Cambia el modo de tema y lo persiste
  * @param {ThemeMode} mode - Nuevo modo de tema
@@ -64,18 +73,11 @@ export const theme = writable(resolveTheme(getInitialTheme()));
 export function setThemeMode(mode) {
 	if (!browser) return;
 
-	// Actualizar store
-	themeMode.set(mode);
-
 	// Persistir en localStorage
 	localStorage.setItem('theme', mode);
 
-	// Actualizar tema resuelto
-	const resolvedTheme = resolveTheme(mode);
-	theme.set(resolvedTheme);
-
-	// Aplicar clase al documento
-	applyThemeToDocument(resolvedTheme);
+	// Actualizar store (esto disparará la suscripción que actualiza theme y DOM)
+	themeMode.set(mode);
 }
 
 /**
@@ -133,10 +135,5 @@ if (browser) {
 			theme.set(newTheme);
 			applyThemeToDocument(newTheme);
 		}
-	});
-
-	// Suscripción para aplicar cambios de tema
-	theme.subscribe((currentTheme) => {
-		applyThemeToDocument(currentTheme);
 	});
 }

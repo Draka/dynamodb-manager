@@ -395,9 +395,9 @@
 	<!-- Estado sin conexión -->
 	{#if !connection}
 		<div class="py-12 text-center">
-			<Lock size={48} class="mx-auto text-gray-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900">Sin conexión</h3>
-			<p class="mt-1 text-sm text-gray-500">
+			<Lock size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin conexión</h3>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 				Selecciona una conexión para ver las tablas disponibles.
 			</p>
 		</div>
@@ -410,8 +410,8 @@
 		<!-- Estado de error -->
 		<div class="py-12 text-center">
 			<AlertTriangle size={48} class="mx-auto text-red-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900">Error cargando tablas</h3>
-			<p class="mt-1 text-sm text-gray-500">{tablesError}</p>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error cargando tablas</h3>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{tablesError}</p>
 			<div class="mt-6">
 				<Button variant="primary" onclick={refreshTables}>Reintentar</Button>
 			</div>
@@ -419,23 +419,23 @@
 	{:else if filteredTables.length === 0 && tables.length === 0}
 		<!-- Sin tablas -->
 		<div class="py-12 text-center">
-			<Table size={48} class="mx-auto text-gray-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900">No hay tablas</h3>
-			<p class="mt-1 text-sm text-gray-500">No se encontraron tablas DynamoDB en esta región.</p>
+			<Table size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay tablas</h3>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No se encontraron tablas DynamoDB en esta región.</p>
 		</div>
 	{:else if filteredTables.length === 0}
 		<!-- Sin resultados de búsqueda -->
 		<div class="py-12 text-center">
-			<Search size={48} class="mx-auto text-gray-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900">Sin resultados</h3>
-			<p class="mt-1 text-sm text-gray-500">
+			<Search size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin resultados</h3>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 				No se encontraron tablas que coincidan con "{searchTerm}".
 			</p>
 		</div>
 	{:else}
 		<!-- Lista de tablas -->
 		<div class="flex-1 space-y-2 overflow-y-auto p-2">
-			<div class="mb-3 text-sm text-gray-500">
+			<div class="mb-3 text-sm text-gray-500 dark:text-gray-400">
 				Mostrando {filteredTables.length} de {tables.length} tablas
 			</div>
 
@@ -446,11 +446,7 @@
 				{@const isSelected = selectedTable === tableName}
 
 				<div
-					class="group relative cursor-pointer rounded-lg border p-4 transition-all duration-200 hover:border-blue-300 hover:shadow-sm"
-					class:border-4={isSelected}
-					class:border-blue-600={isSelected}
-					class:bg-blue-100={isSelected}
-					class:border-gray-200={!isSelected}
+					class="group relative cursor-pointer rounded-lg border p-4 transition-all duration-200 hover:border-blue-300 hover:shadow-sm dark:hover:border-blue-400 {isSelected ? 'border-4 border-blue-600 bg-blue-100 dark:border-blue-500 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'}"
 					onclick={() => selectTable(tableName)}
 					role="button"
 					tabindex="0"
@@ -493,13 +489,13 @@
 						<div class="min-w-0 flex-1">
 							<!-- Nombre de la tabla -->
 							<div class="mb-2 flex items-center gap-2">
-								<h4 class="truncate text-base font-medium text-gray-900">
+								<h4 class="truncate text-base font-medium text-gray-900 dark:text-white">
 									{tableName}
 								</h4>
 
 								{#if details}
 									<span
-										class="rounded-full bg-gray-100 px-2 py-1 text-xs {getTableStatusColor(
+										class="rounded-full bg-gray-100 px-2 py-1 text-xs dark:bg-gray-700 {getTableStatusColor(
 											details
 										)}"
 									>
@@ -510,19 +506,19 @@
 
 							<!-- Información de la tabla -->
 							{#if isLoadingDetails}
-								<div class="flex items-center gap-2 text-sm text-gray-500">
+								<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
 									<LoadingSpinner size="sm" />
 									<span>Cargando detalles...</span>
 								</div>
 							{:else if details}
-								<div class="space-y-1 text-sm text-gray-600">
+								<div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
 									<!-- Claves -->
 									{#if keys}
 										<div class="flex items-center gap-4">
 											<div class="flex items-center gap-1">
 												<Key size={16} />
 												<span
-													>PK: <code class="rounded bg-gray-100 px-1 text-xs">{keys.hashKey}</code
+													>PK: <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700">{keys.hashKey}</code
 													></span
 												>
 											</div>
@@ -530,7 +526,7 @@
 											{#if keys.rangeKey}
 												<div class="flex items-center gap-1">
 													<span
-														>SK: <code class="rounded bg-gray-100 px-1 text-xs"
+														>SK: <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700"
 															>{keys.rangeKey}</code
 														></span
 													>
@@ -557,7 +553,7 @@
 									</div>
 								</div>
 							{:else}
-								<div class="text-sm text-gray-500">Clic para cargar detalles</div>
+								<div class="text-sm text-gray-500 dark:text-gray-400">Clic para cargar detalles</div>
 							{/if}
 						</div>
 
@@ -587,16 +583,16 @@
 <!-- Modal de confirmación para limpiar registros -->
 {#if clearItemsModal.isOpen}
 	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-		<div class="max-w-md rounded-lg bg-white p-6 shadow-xl">
+		<div class="max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
 			<div class="mb-4">
-				<h3 class="text-lg font-semibold text-gray-900">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">
 					Confirmar eliminación de registros
 				</h3>
-				<p class="mt-2 text-sm text-gray-600">
-					¿Estás seguro de que quieres <strong>borrar todos los registros</strong> de la tabla 
-					<span class="font-mono bg-gray-100 px-1 rounded">{clearItemsModal.tableName}</span>?
+				<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+					¿Estás seguro de que quieres <strong>borrar todos los registros</strong> de la tabla
+					<span class="font-mono bg-gray-100 px-1 rounded dark:bg-gray-700">{clearItemsModal.tableName}</span>?
 				</p>
-				<p class="mt-2 text-sm text-red-600">
+				<p class="mt-2 text-sm text-red-600 dark:text-red-400">
 					⚠️ Esta acción no se puede deshacer. Solo se eliminarán los registros, la tabla permanecerá.
 				</p>
 			</div>

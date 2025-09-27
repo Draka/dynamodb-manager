@@ -4,7 +4,7 @@
 -->
 <script>
 	import { Sun, Moon, Monitor } from 'lucide-svelte';
-	import { themeMode, theme, setThemeMode, THEME_MODES } from '../../../stores/theme.js';
+	import { themeMode, setThemeMode, THEME_MODES } from '../../../stores/theme.js';
 
 	let {
 		/** @type {'button' | 'dropdown'} Variante del componente */

@@ -75,19 +75,19 @@
 	<meta name="description" content={m['app.description']()} />
 </svelte:head>
 
-<main class="flex h-screen bg-gray-100">
+<main class="flex h-screen bg-gray-100 dark:bg-gray-900">
 	<!-- Panel lateral izquierdo: Lista de conexiones -->
 	<div
-		class="flex w-80 flex-col border-r border-gray-700 bg-gray-800 text-white {showConnectionList
+		class="flex w-80 flex-col border-r border-gray-700 bg-gray-800 text-white dark:border-gray-600 dark:bg-gray-900 {showConnectionList
 			? ''
 			: 'hidden'}"
 	>
 		<!-- Header del panel -->
-		<div class="border-b border-gray-700 bg-gray-900 p-4">
+		<div class="border-b border-gray-700 bg-gray-900 p-4 dark:border-gray-600 dark:bg-gray-800">
 			<div class="flex items-center justify-between">
 				<h1 class="text-lg font-semibold">{m['app.title']()}</h1>
 				<button
-					class="rounded p-1 hover:bg-gray-700"
+					class="rounded p-1 hover:bg-gray-700 dark:hover:bg-gray-600"
 					onclick={toggleConnectionList}
 					title={m['navigation.hidePanel']()}
 				>
@@ -98,7 +98,7 @@
 
 			<!-- Botón nueva conexión -->
 			<button
-				class="mt-3 flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+				class="mt-3 flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
 				onclick={openNewConnection}
 			>
 				<Plus size={16} />
@@ -109,7 +109,7 @@
 		<!-- Lista de conexiones -->
 		<div class="flex-1 overflow-y-auto">
 			<div class="p-4">
-				<h2 class="mb-3 text-sm font-medium tracking-wide text-gray-300 uppercase">
+				<h2 class="mb-3 text-sm font-medium tracking-wide text-gray-300 uppercase dark:text-gray-400">
 					{m['navigation.connections']()}
 				</h2>
 				<ConnectionList
@@ -125,11 +125,11 @@
 	<div class="flex flex-1 flex-col overflow-hidden">
 		<!-- Barra superior -->
 		<div
-			class="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-2"
+			class="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800"
 		>
 			{#if !showConnectionList}
 				<button
-					class="rounded p-2 hover:bg-gray-100"
+					class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
 					onclick={toggleConnectionList}
 					title={m['navigation.showConnections']()}
 				>
@@ -138,7 +138,7 @@
 				</button>
 			{/if}
 
-			<div class="flex flex-1 items-center gap-4 text-sm text-gray-600">
+			<div class="flex flex-1 items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
 				<span>{m['app.title']()}</span>
 				<ConnectionStatus />
 			</div>

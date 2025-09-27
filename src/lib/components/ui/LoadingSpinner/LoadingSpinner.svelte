@@ -33,9 +33,9 @@
 
 	/** Mapeo de colores a clases CSS */
 	const colorClasses = {
-		blue: 'text-blue-600',
+		blue: 'text-blue-600 dark:text-blue-400',
 		white: 'text-white',
-		gray: 'text-gray-600'
+		gray: 'text-gray-600 dark:text-gray-400'
 	};
 
 	/** Clases del contenedor */
@@ -55,11 +55,11 @@
 
 <div class={containerClasses} {...props}>
 	<!-- Spinner SVG -->
-	<Loader class="opacity-25" />
+	<Loader class={spinnerClasses} />
 
 	<!-- Texto de carga -->
 	{#if text}
-		<span class="text-sm text-gray-600">{text}</span>
+		<span class="text-sm text-gray-600 dark:text-gray-400">{text}</span>
 	{/if}
 
 	<!-- Contenido adicional -->

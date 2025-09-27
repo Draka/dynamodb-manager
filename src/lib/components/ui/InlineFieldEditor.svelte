@@ -106,7 +106,7 @@
 
 <div class="relative">
 	<div
-		class="absolute z-50 rounded-lg border bg-white p-3 shadow-lg {getPositionClasses()}"
+		class="absolute z-50 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-3 shadow-lg {getPositionClasses()}"
 		style="min-width: 250px"
 	>
 		<div class="space-y-2">
@@ -116,7 +116,7 @@
 					bind:this={inputElement}
 					bind:value={editingValue}
 					onkeydown={handleKeydown}
-					class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+					class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-2 py-1 text-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
 				>
 					<option value="true">true</option>
 					<option value="false">false</option>
@@ -129,7 +129,7 @@
 					oninput={handleInput}
 					onkeydown={handleKeydown}
 					placeholder="Ingrese un número"
-					class="w-full rounded border px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 {!isValid ? 'border-red-500' : 'border-gray-300'}"
+					class="w-full rounded border px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 {!isValid ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'}"
 				/>
 			{:else}
 				<input
@@ -139,13 +139,13 @@
 					oninput={handleInput}
 					onkeydown={handleKeydown}
 					placeholder="Ingrese el valor"
-					class="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+					class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-2 py-1 text-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
 				/>
 			{/if}
 
 			<!-- Mensaje de validación -->
 			{#if !isValid && fieldType === 'number'}
-				<p class="text-xs text-red-600">Debe ser un número válido</p>
+				<p class="text-xs text-red-600 dark:text-red-400">Debe ser un número válido</p>
 			{/if}
 
 			<!-- Botones de acción -->
@@ -153,7 +153,7 @@
 				<button
 					type="button"
 					onclick={onCancel}
-					class="flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200"
+					class="flex items-center gap-1 rounded bg-gray-100 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
 					title="Cancelar (Esc)"
 				>
 					<X size={14} />
@@ -163,7 +163,7 @@
 					type="button"
 					onclick={handleAccept}
 					disabled={!isValid}
-					class="flex items-center gap-1 rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+					class="flex items-center gap-1 rounded bg-blue-600 dark:bg-blue-700 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700 dark:hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-gray-400 dark:disabled:bg-gray-600"
 					title="Aceptar (Enter)"
 				>
 					<Check size={14} />

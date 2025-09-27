@@ -128,22 +128,22 @@
 	 */
 	function getValueType(value) {
 		if (value === null || value === undefined) {
-			return 'text-gray-400 italic';
+			return 'text-gray-400 dark:text-gray-500 italic';
 		}
 
 		if (typeof value === 'number') {
-			return 'text-blue-600 font-mono';
+			return 'text-blue-600 dark:text-blue-400 font-mono';
 		}
 
 		if (typeof value === 'boolean') {
-			return 'text-green-600 font-mono';
+			return 'text-green-600 dark:text-green-400 font-mono';
 		}
 
 		if (typeof value === 'object') {
-			return 'text-purple-600 italic';
+			return 'text-purple-600 dark:text-purple-400 italic';
 		}
 
-		return 'text-gray-900';
+		return 'text-gray-900 dark:text-white';
 	}
 
 	/**
@@ -237,25 +237,25 @@
 
 <div class="flex h-full flex-col gap-2">
 	<div class="flex-1 overflow-auto">
-		<table class="min-w-full divide-y divide-gray-200">
+		<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
 			<!-- Header -->
-			<thead class="bg-gray-50">
+			<thead class="bg-gray-50 dark:bg-gray-800">
 				<tr>
 					<th
-						class="sticky top-0 z-10 bg-gray-50 p-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 p-2 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-gray-300 uppercase"
 					>
 						#
 					</th>
 					{#if onEditRecord || onDeleteRecord}
 						<th
-							class="sticky top-0 z-10 bg-gray-50 px-3 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 px-3 py-3 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-gray-300 uppercase"
 						>
 							Acciones
 						</th>
 					{/if}
 					{#each columns() as column (column)}
 						<th
-							class="sticky top-0 z-10 bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase {isNumericColumn(
+							class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-gray-300 uppercase {isNumericColumn(
 								column
 							)
 								? 'text-right'
@@ -275,17 +275,17 @@
 			</thead>
 
 			<!-- Body -->
-			<tbody class="divide-y divide-gray-200 bg-white">
+			<tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
 				{#each records as record, index (index)}
-					<tr class="group transition-colors hover:bg-gray-50">
-						<td class="p-2 text-sm">{index + 1}</td>
+					<tr class="group transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+						<td class="p-2 text-sm text-gray-900 dark:text-white">{index + 1}</td>
 						{#if onEditRecord || onDeleteRecord}
 							<td class="px-3 py-2">
 								<div class="flex items-center gap-1">
 									{#if onEditRecord}
 										<button
 											type="button"
-											class="rounded-md p-1.5 text-gray-400 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-600"
+											class="rounded-md p-1.5 text-gray-400 dark:text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
 											onclick={() => onEditRecord?.(record)}
 											title="Editar registro"
 										>
@@ -296,7 +296,7 @@
 									{#if onDeleteRecord}
 										<button
 											type="button"
-											class="rounded-md p-1.5 text-gray-400 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-100 hover:text-red-600"
+											class="rounded-md p-1.5 text-gray-400 dark:text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
 											onclick={() => onDeleteRecord?.(record)}
 											title="Eliminar registro"
 										>
@@ -336,13 +336,13 @@
 											onCancel={cancelInlineEdit}
 											position="bottom"
 										/>
-										<span class="rounded bg-blue-50 px-2 py-1 text-blue-600">
+										<span class="rounded bg-blue-50 dark:bg-blue-900/20 px-2 py-1 text-blue-600 dark:text-blue-300">
 											{formattedValue}
 										</span>
 									{:else}
 										<!-- Valor normal -->
 										<button
-											class="cursor-pointer rounded px-2 py-1 transition-colors hover:bg-gray-100"
+											class="cursor-pointer rounded px-2 py-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
 											title="Clic para copiar: {typeof value === 'object'
 												? JSON.stringify(value)
 												: String(value)}"
@@ -355,7 +355,7 @@
 										{#if canEditInline}
 											<button
 												type="button"
-												class="text-blue-500 opacity-0 transition-all group-hover:opacity-100 hover:text-blue-700"
+												class="text-blue-500 dark:text-blue-400 opacity-0 transition-all group-hover:opacity-100 hover:text-blue-700 dark:hover:text-blue-300"
 												onclick={() => startInlineEdit(index, column, value)}
 												title="Editar campo"
 											>
@@ -368,7 +368,7 @@
 										{#if value !== null && value !== undefined}
 											<button
 												type="button"
-												class="text-gray-400 opacity-0 transition-all group-hover:opacity-100 hover:text-gray-600 hover:opacity-100"
+												class="text-gray-400 dark:text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:opacity-100"
 												onclick={() => copyToClipboard(value)}
 												title="Copiar valor"
 											>
@@ -387,8 +387,8 @@
 	</div>
 
 	<!-- Footer con información -->
-	<div class="border-t bg-gray-50 p-2">
-		<div class="flex items-center justify-between text-sm text-gray-600">
+	<div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
+		<div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
 			<span>{records.length} registros mostrados</span>
 			<span>{columns.length} columnas</span>
 		</div>

@@ -170,7 +170,7 @@
 <!-- Overlay del modal -->
 {#if isOpen}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70"
 		onclick={handleClose}
 		onkeydown={(e) => {
 			if (e.key === 'Escape') {
@@ -183,26 +183,26 @@
 	>
 		<!-- Panel del editor -->
 		<div
-			class="flex h-full w-full max-w-4xl flex-col bg-white shadow-xl"
+			class="flex h-full w-full max-w-4xl flex-col bg-white dark:bg-gray-800 shadow-xl"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.stopPropagation()}
 			role="button"
 			tabindex="0"
 		>
 			<!-- Header -->
-			<div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+			<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
 				<div>
-					<h2 class="text-lg font-medium text-gray-900">Editar Registro</h2>
-					<p class="text-sm text-gray-600">Tabla: {tableName}</p>
+					<h2 class="text-lg font-medium text-gray-900 dark:text-white">Editar Registro</h2>
+					<p class="text-sm text-gray-600 dark:text-gray-300">Tabla: {tableName}</p>
 				</div>
 				<div class="flex items-center gap-2">
 					{#if hasChanges}
-						<span class="rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+						<span class="rounded-full bg-yellow-100 dark:bg-yellow-900/20 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-400">
 							Cambios sin guardar
 						</span>
 					{/if}
 					<button
-						class="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+						class="rounded-md p-2 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
 						onclick={handleClose}
 						title="Cerrar"
 					>
@@ -214,19 +214,19 @@
 			<!-- Contenido -->
 			<div class="flex flex-1 flex-col overflow-hidden">
 				<!-- Toolbar -->
-				<div class="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-6 py-3">
+				<div class="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-3">
 					<Button size="sm" variant="secondary" onclick={formatJson} disabled={!jsonText.trim()}>
 						<AlignLeft size={16} class="mr-2" />
 						Formatear JSON
 					</Button>
 
 					{#if validationError}
-						<div class="flex items-center gap-2 text-red-600">
+						<div class="flex items-center gap-2 text-red-600 dark:text-red-400">
 							<Code size={16} />
 							<span class="text-sm">JSON inválido</span>
 						</div>
 					{:else if isValid && jsonText.trim()}
-						<div class="flex items-center gap-2 text-green-600">
+						<div class="flex items-center gap-2 text-green-600 dark:text-green-400">
 							<CircleCheckBig size={16} />
 							<span class="text-sm">JSON válido</span>
 						</div>
@@ -238,7 +238,7 @@
 					<textarea
 						bind:value={jsonText}
 						oninput={checkForChanges}
-						class="h-full w-full resize-none border-none bg-gray-50 p-6 font-mono text-sm leading-relaxed focus:outline-none focus:ring-0"
+						class="h-full w-full resize-none border-none bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 font-mono text-sm leading-relaxed focus:outline-none focus:ring-0"
 						placeholder="Ingresa el JSON del registro..."
 						spellcheck="false"
 					></textarea>
@@ -246,12 +246,12 @@
 
 				<!-- Mensaje de error -->
 				{#if validationError}
-					<div class="border-t border-red-200 bg-red-50 px-6 py-3">
+					<div class="border-t border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-6 py-3">
 						<div class="flex items-start gap-2">
-							<Code size={16} class="mt-0.5 text-red-500" />
+							<Code size={16} class="mt-0.5 text-red-500 dark:text-red-400" />
 							<div>
-								<p class="text-sm font-medium text-red-800">Error de validación</p>
-								<p class="text-sm text-red-700">{validationError}</p>
+								<p class="text-sm font-medium text-red-800 dark:text-red-300">Error de validación</p>
+								<p class="text-sm text-red-700 dark:text-red-400">{validationError}</p>
 							</div>
 						</div>
 					</div>
@@ -260,7 +260,7 @@
 
 			<!-- Footer con botones -->
 			<div
-				class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4"
+				class="flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4"
 			>
 				<Button variant="secondary" onclick={handleClose} disabled={saving}>Cancelar</Button>
 				<Button
@@ -285,8 +285,14 @@
 	textarea::placeholder {
 		color: #9ca3af;
 	}
+	:global(.dark) textarea::placeholder {
+		color: #6b7280;
+	}
 
 	textarea:focus {
 		background-color: #ffffff;
+	}
+	:global(.dark) textarea:focus {
+		background-color: #111827;
 	}
 </style>

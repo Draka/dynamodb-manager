@@ -28,9 +28,9 @@
 
 	/** Mapeo de variantes a clases CSS */
 	const variantClasses = {
-		white: 'bg-white shadow-sm',
-		gray: 'bg-gray-50',
-		bordered: 'bg-white border border-gray-200'
+		white: 'bg-white dark:bg-gray-900 shadow-sm',
+		gray: 'bg-gray-50 dark:bg-gray-800',
+		bordered: 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
 	};
 
 	/** Clases computadas finales */
@@ -56,7 +56,7 @@
 		{#if collapsible}
 			<button
 				type="button"
-				class="w-full cursor-pointer border-b border-gray-200 px-6 py-4 text-left hover:bg-gray-50"
+				class="w-full cursor-pointer border-b border-gray-200 dark:border-gray-700 px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800"
 				onclick={toggleCollapse}
 			>
 				<div class="flex items-center justify-between">
@@ -64,11 +64,11 @@
 						{#if header}
 							{@render header()}
 						{:else if title}
-							<h3 class="text-lg font-medium text-gray-900">
+							<h3 class="text-lg font-medium text-gray-900 dark:text-white">
 								{title}
 							</h3>
 							{#if subtitle}
-								<p class="mt-1 text-sm text-gray-500">
+								<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 									{subtitle}
 								</p>
 							{/if}
@@ -77,23 +77,23 @@
 
 					<ChevronDown
 						size={20}
-						class="transform transition-transform duration-200 {collapsed
+						class="transform transition-transform duration-200 text-gray-400 dark:text-gray-500 {collapsed
 							? 'rotate-0'
 							: 'rotate-180'}"
 					/>
 				</div>
 			</button>
 		{:else}
-			<div class="border-b border-gray-200 px-6 py-4">
+			<div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
 				<div>
 					{#if header}
 						{@render header()}
 					{:else if title}
-						<h3 class="text-lg font-medium text-gray-900">
+						<h3 class="text-lg font-medium text-gray-900 dark:text-white">
 							{title}
 						</h3>
 						{#if subtitle}
-							<p class="mt-1 text-sm text-gray-500">
+							<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 								{subtitle}
 							</p>
 						{/if}
@@ -112,7 +112,7 @@
 
 	<!-- Footer -->
 	{#if footer && !collapsed}
-		<div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+		<div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4">
 			{@render footer()}
 		</div>
 	{/if}

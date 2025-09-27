@@ -62,14 +62,14 @@
 
 <div class="flex h-full flex-col">
 	<!-- Barra de pestañas -->
-	<div class="flex min-h-[40px] items-center border-b border-gray-200 bg-gray-50">
+	<div class="flex min-h-[40px] items-center border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
 		<div class="flex flex-1 items-center overflow-x-auto">
 			{#each tabs as tab (tab.id)}
 				<div
-					class="group flex items-center gap-2 border-r border-gray-200 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-150 {activeTab ===
+					class="group flex items-center gap-2 border-r border-gray-200 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-150 dark:border-gray-700 {activeTab ===
 					tab.id
-						? 'border-b-2 border-blue-600 bg-white text-blue-600'
-						: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}"
+						? 'border-b-2 border-blue-600 bg-white text-blue-600 dark:bg-gray-900 dark:text-blue-400'
+						: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'}"
 					onclick={() => handleTabClick(tab.id)}
 					title={tab.title}
 					role="button"
@@ -103,7 +103,7 @@
 		<!-- Botón nueva pestaña -->
 		{#if showNewTab}
 			<button
-				class="new-tab-button flex items-center gap-2 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+				class="new-tab-button flex items-center gap-2 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
 				onclick={handleNewTab}
 				title={newTabText}
 			>
@@ -114,7 +114,7 @@
 	</div>
 
 	<!-- Contenido de la pestaña activa -->
-	<div class="flex-1 overflow-hidden bg-white">
+	<div class="flex-1 overflow-hidden bg-white dark:bg-gray-900">
 		{#if children}
 			{@render children()}
 		{/if}

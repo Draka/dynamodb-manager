@@ -175,36 +175,36 @@
 			<div class="mx-auto mb-4 h-12 w-12 text-red-500">
 				<AlertTriangle size={24} />
 			</div>
-			<h3 class="mb-2 text-lg font-medium text-gray-900">Error cargando información</h3>
-			<p class="mb-4 text-sm text-red-600">{error}</p>
+			<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Error cargando información</h3>
+			<p class="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>
 			<Button onclick={loadTableInfo}>Reintentar</Button>
 		</div>
 	{:else if tableInfo}
 		<!-- Header -->
-		<div class="border-b border-gray-200 pb-4">
-			<h3 class="text-lg font-medium text-gray-900">
+		<div class="border-b border-gray-200 pb-4 dark:border-gray-700">
+			<h3 class="text-lg font-medium text-gray-900 dark:text-white">
 				Información Avanzada: {tableName}
 			</h3>
-			<p class="mt-1 text-sm text-gray-600">
+			<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
 				Configuración, análisis de datos y herramientas de administración
 			</p>
 		</div>
 
 		<!-- Configuración Avanzada -->
 		{#if advancedConfig}
-			<div class="rounded-lg border border-gray-200 bg-white p-6">
-				<h4 class="text-md mb-4 font-medium text-gray-900">⚙️ Configuración Avanzada</h4>
+			<div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+				<h4 class="text-md mb-4 font-medium text-gray-900 dark:text-white">⚙️ Configuración Avanzada</h4>
 
 				<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 					<!-- TTL -->
-					<div class="rounded-md border border-gray-100 p-3">
+					<div class="rounded-md border border-gray-100 p-3 dark:border-gray-600 dark:bg-gray-700">
 						<div class="flex items-center gap-2">
 							<span class="text-lg {getStatusColor(advancedConfig.ttl)}">
 								{getStatusIcon(advancedConfig.ttl)}
 							</span>
 							<div>
-								<p class="text-sm font-medium text-gray-900">Time To Live (TTL)</p>
-								<p class="text-xs text-gray-600">
+								<p class="text-sm font-medium text-gray-900 dark:text-white">Time To Live (TTL)</p>
+								<p class="text-xs text-gray-600 dark:text-gray-300">
 									{#if advancedConfig.ttl}
 										Atributo: {advancedConfig.ttlAttribute}
 									{:else}
@@ -216,14 +216,14 @@
 					</div>
 
 					<!-- Streams -->
-					<div class="rounded-md border border-gray-100 p-3">
+					<div class="rounded-md border border-gray-100 p-3 dark:border-gray-600 dark:bg-gray-700">
 						<div class="flex items-center gap-2">
 							<span class="text-lg {getStatusColor(advancedConfig.streams)}">
 								{getStatusIcon(advancedConfig.streams)}
 							</span>
 							<div>
-								<p class="text-sm font-medium text-gray-900">DynamoDB Streams</p>
-								<p class="text-xs text-gray-600">
+								<p class="text-sm font-medium text-gray-900 dark:text-white">DynamoDB Streams</p>
+								<p class="text-xs text-gray-600 dark:text-gray-300">
 									{#if advancedConfig.streams}
 										{advancedConfig.streamViewType}
 									{:else}
@@ -235,14 +235,14 @@
 					</div>
 
 					<!-- Encryption -->
-					<div class="rounded-md border border-gray-100 p-3">
+					<div class="rounded-md border border-gray-100 p-3 dark:border-gray-600 dark:bg-gray-700">
 						<div class="flex items-center gap-2">
 							<span class="text-lg {getStatusColor(advancedConfig.encryption)}">
 								{getStatusIcon(advancedConfig.encryption)}
 							</span>
 							<div>
-								<p class="text-sm font-medium text-gray-900">Cifrado</p>
-								<p class="text-xs text-gray-600">
+								<p class="text-sm font-medium text-gray-900 dark:text-white">Cifrado</p>
+								<p class="text-xs text-gray-600 dark:text-gray-300">
 									{#if advancedConfig.encryption}
 										{advancedConfig.encryptionType}
 									{:else}
@@ -254,14 +254,14 @@
 					</div>
 
 					<!-- Point in Time Recovery -->
-					<div class="rounded-md border border-gray-100 p-3">
+					<div class="rounded-md border border-gray-100 p-3 dark:border-gray-600 dark:bg-gray-700">
 						<div class="flex items-center gap-2">
 							<span class="text-lg {getStatusColor(advancedConfig.pointInTimeRecovery)}">
 								{getStatusIcon(advancedConfig.pointInTimeRecovery)}
 							</span>
 							<div>
-								<p class="text-sm font-medium text-gray-900">Point-in-time Recovery</p>
-								<p class="text-xs text-gray-600">
+								<p class="text-sm font-medium text-gray-900 dark:text-white">Point-in-time Recovery</p>
+								<p class="text-xs text-gray-600 dark:text-gray-300">
 									{advancedConfig.pointInTimeRecovery ? 'Habilitado' : 'Deshabilitado'}
 								</p>
 							</div>
@@ -269,14 +269,14 @@
 					</div>
 
 					<!-- Billing Mode -->
-					<div class="rounded-md border border-gray-100 p-3">
+					<div class="rounded-md border border-gray-100 p-3 dark:border-gray-600 dark:bg-gray-700">
 						<div>
-							<p class="text-sm font-medium text-gray-900">💳 Modo de Facturación</p>
-							<p class="text-xs text-gray-600">
+							<p class="text-sm font-medium text-gray-900 dark:text-white">💳 Modo de Facturación</p>
+							<p class="text-xs text-gray-600 dark:text-gray-300">
 								{tableInfo.BillingModeSummary?.BillingMode || 'PROVISIONED'}
 							</p>
 							{#if (tableInfo.BillingModeSummary?.BillingMode || 'PROVISIONED') === 'PROVISIONED' && advancedConfig.provisionedThroughput}
-								<p class="mt-1 text-xs text-blue-600">
+								<p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
 									{formatThroughput(advancedConfig.provisionedThroughput)}
 								</p>
 							{/if}
@@ -288,18 +288,18 @@
 
 		<!-- Análisis de Datos -->
 		{#if loadingAnalysis}
-			<div class="rounded-lg border border-gray-200 bg-white p-6">
+			<div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
 				<div class="flex items-center gap-3">
 					<LoadingSpinner size="sm" />
-					<span class="text-sm text-gray-600">Analizando estructura de datos...</span>
+					<span class="text-sm text-gray-600 dark:text-gray-300">Analizando estructura de datos...</span>
 				</div>
 			</div>
 		{:else if dataAnalysis}
-			<div class="rounded-lg border border-gray-200 bg-white p-6">
-				<h4 class="text-md mb-4 font-medium text-gray-900">📊 Análisis de Datos</h4>
+			<div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+				<h4 class="text-md mb-4 font-medium text-gray-900 dark:text-white">📊 Análisis de Datos</h4>
 
 				<div class="mb-4">
-					<p class="text-sm text-gray-600">
+					<p class="text-sm text-gray-600 dark:text-gray-300">
 						Basado en {sampleData.length} registros de muestra • {dataAnalysis?.totalFields || 0} campos
 						únicos
 					</p>
@@ -360,11 +360,11 @@
 			</div>
 		{:else}
 			<!-- Sin datos para análisis -->
-			<div class="rounded-lg border border-gray-200 bg-gray-50 p-6">
+			<div class="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800">
 				<div class="text-center">
-					<BarChart3 size={48} class="mx-auto mb-3 text-gray-400" />
-					<h4 class="text-md mb-2 font-medium text-gray-900">📊 Sin Datos para Análisis</h4>
-					<p class="text-sm text-gray-600">
+					<BarChart3 size={48} class="mx-auto mb-3 text-gray-400 dark:text-gray-500" />
+					<h4 class="text-md mb-2 font-medium text-gray-900 dark:text-white">📊 Sin Datos para Análisis</h4>
+					<p class="text-sm text-gray-600 dark:text-gray-300">
 						La tabla parece estar vacía. Agrega algunos registros para ver el análisis de estructura
 						de datos.
 					</p>

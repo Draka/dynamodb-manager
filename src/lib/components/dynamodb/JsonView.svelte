@@ -118,18 +118,18 @@
 
 <div class="flex h-full flex-col gap-2">
 	<!-- Controles -->
-	<div class="flex items-center justify-between border-b bg-gray-50 p-2">
+	<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
 		<div class="flex items-center gap-4">
 			<button
 				type="button"
-				class="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm transition-colors hover:bg-gray-50"
+				class="flex items-center gap-2 rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1 text-sm text-gray-900 dark:text-white transition-colors hover:bg-gray-50 dark:hover:bg-gray-600"
 				onclick={toggleCompactView}
 			>
 				<Menu size={16} />
 				{compactView ? 'Vista Expandida' : 'Vista Compacta'}
 			</button>
 
-			<span class="text-sm text-gray-600">
+			<span class="text-sm text-gray-600 dark:text-gray-300">
 				{records.length}
 				{records.length === 1 ? 'registro' : 'registros'}
 			</span>
@@ -137,7 +137,7 @@
 
 		<button
 			type="button"
-			class="flex items-center gap-2 rounded-md bg-blue-600 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700"
+			class="flex items-center gap-2 rounded-md bg-blue-600 dark:bg-blue-500 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700 dark:hover:bg-blue-600"
 			onclick={copyAllRecords}
 		>
 			<Copy size={16} />
@@ -148,10 +148,10 @@
 	<!-- Vista de registros -->
 	<div class="flex-1 space-y-2 overflow-y-auto">
 		{#each records as record, index (index)}
-			<div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+			<div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
 				<!-- Header del registro -->
 				<div
-					class="flex cursor-pointer items-center justify-between p-2 transition-colors hover:bg-gray-50"
+					class="flex cursor-pointer items-center justify-between p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
 					onclick={() => selectRecord(index)}
 					role="button"
 					tabindex="0"
@@ -163,12 +163,12 @@
 					}}
 				>
 					<div class="flex items-center gap-3">
-						<span class="text-sm font-medium text-gray-900">
+						<span class="text-sm font-medium text-gray-900 dark:text-white">
 							Registro #{index + 1}
 						</span>
 
 						{#if compactView}
-							<span class="max-w-md truncate text-xs text-gray-500">
+							<span class="max-w-md truncate text-xs text-gray-500 dark:text-gray-400">
 								{getRecordPreview(record)}
 							</span>
 						{/if}
@@ -178,7 +178,7 @@
 						{#if onEditRecord}
 							<button
 								type="button"
-								class="text-gray-400 transition-colors hover:text-gray-600"
+								class="text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
 								onclick={(e) => {
 									e.stopPropagation();
 									onEditRecord?.(record);
@@ -193,7 +193,7 @@
 						{#if onDeleteRecord}
 							<button
 								type="button"
-								class="text-gray-400 transition-colors hover:text-red-600"
+								class="text-gray-400 dark:text-gray-500 transition-colors hover:text-red-600 dark:hover:text-red-400"
 								onclick={(e) => {
 									e.stopPropagation();
 									onDeleteRecord?.(record);
@@ -214,7 +214,7 @@
 
 						<button
 							type="button"
-							class="text-gray-400 transition-colors hover:text-gray-600"
+							class="text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
 							onclick={(e) => {
 								e.stopPropagation();
 								copyRecord(record);
@@ -227,7 +227,7 @@
 
 						<ChevronDown
 							size={16}
-							class="transform text-gray-400 transition-transform {selectedRecord === index
+							class="transform text-gray-400 dark:text-gray-500 transition-transform {selectedRecord === index
 								? 'rotate-180'
 								: ''}"
 						/>
@@ -236,9 +236,9 @@
 
 				<!-- Contenido del registro (expandible) -->
 				{#if selectedRecord === index || !compactView}
-					<div class="h-px bg-black"></div>
+					<div class="h-px bg-gray-200 dark:bg-gray-700"></div>
 					<div
-						class="overflow-x-auto rounded-md bg-gray-50 p-4 font-mono text-sm leading-relaxed whitespace-pre"
+						class="overflow-x-auto rounded-md bg-gray-50 dark:bg-gray-800 p-4 font-mono text-sm leading-relaxed whitespace-pre text-gray-900 dark:text-gray-100"
 					>
 						{@html syntaxHighlight(record)}
 					</div>
@@ -251,8 +251,8 @@
 	{#if records.length === 0}
 		<div class="py-12 text-center">
 			<FileText size={48} class="mx-auto text-gray-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900">Sin datos JSON</h3>
-			<p class="mt-1 text-sm text-gray-500">No hay registros para mostrar en formato JSON.</p>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin datos JSON</h3>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No hay registros para mostrar en formato JSON.</p>
 		</div>
 	{/if}
 </div>
@@ -264,21 +264,37 @@
 	:global(.json-key) {
 		color: #dc2626; /* red-600 */
 	}
+	:global(.dark .json-key) {
+		color: #f87171; /* red-400 */
+	}
 
 	:global(.json-string) {
 		color: #16a34a; /* green-600 */
+	}
+	:global(.dark .json-string) {
+		color: #4ade80; /* green-400 */
 	}
 
 	:global(.json-number) {
 		color: #2563eb; /* blue-600 */
 	}
+	:global(.dark .json-number) {
+		color: #60a5fa; /* blue-400 */
+	}
 
 	:global(.json-boolean) {
 		color: #9333ea; /* purple-600 */
 	}
+	:global(.dark .json-boolean) {
+		color: #c084fc; /* purple-400 */
+	}
 
 	:global(.json-null) {
 		color: #6b7280; /* gray-500 */
+		font-style: italic;
+	}
+	:global(.dark .json-null) {
+		color: #9ca3af; /* gray-400 */
 		font-style: italic;
 	}
 </style>

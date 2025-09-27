@@ -45,7 +45,7 @@
 
 	/** Clases computadas del modal */
 	const modalClasses = $derived(
-		['relative bg-white rounded-lg shadow-xl', sizeClasses[size]].filter(Boolean).join(' ')
+		['relative bg-white dark:bg-gray-900 rounded-lg shadow-xl', sizeClasses[size]].filter(Boolean).join(' ')
 	);
 
 	/**
@@ -147,13 +147,14 @@
 {#if open}
 	<!-- Overlay -->
 	<div
-		class="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/20 bg-opacity-50 p-4 backdrop-blur-sm duration-200"
+		class="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/20 dark:bg-black/40 bg-opacity-50 p-4 backdrop-blur-sm duration-200"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby={title ? 'modal-title' : undefined}
 		tabindex="-1"
 		in:fade
 		out:fade
+		onclick={handleOverlayClick}
 	>
 		<!-- Modal Content -->
 		<div
@@ -166,7 +167,7 @@
 			{#if title || closable}
 				<div class="flex items-center justify-between pb-4">
 					{#if title}
-						<h2 id="modal-title" class="px-4 text-lg font-semibold text-gray-900">
+						<h2 id="modal-title" class="px-4 text-lg font-semibold text-gray-900 dark:text-white">
 							{title}
 						</h2>
 					{/if}
@@ -174,7 +175,7 @@
 					{#if closable}
 						<button
 							type="button"
-							class="flex h-10 w-10 items-center justify-center rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							class="flex h-10 w-10 items-center justify-center rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
 							onclick={closeModal}
 							aria-label="Cerrar modal"
 						>
@@ -191,7 +192,7 @@
 
 			<!-- Footer -->
 			{#if footer}
-				<div class="rounded-b-lg bg-gray-50 py-4">
+				<div class="rounded-b-lg bg-gray-50 dark:bg-gray-800 py-4">
 					{@render footer()}
 				</div>
 			{/if}

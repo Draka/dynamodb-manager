@@ -264,20 +264,20 @@
 	}}
 >
 	<div class="text-center">
-		<h2 class="mb-2 text-2xl font-bold text-gray-900">
+		<h2 class="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
 			{title}
 		</h2>
-		<p class="text-gray-600">
+		<p class="text-gray-600 dark:text-gray-300">
 			{isEditing ? 'Modifica los datos de tu conexión' : 'Configura una nueva conexión a DynamoDB'}
 		</p>
 	</div>
 
 	<!-- Error general -->
 	{#if errors.general}
-		<div class="rounded-lg border border-red-200 bg-red-50 p-4">
+		<div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
 			<div class="flex items-center gap-2">
-				<Code size={20} class="text-red-500" />
-				<span class="text-sm text-red-700">{errors.general}</span>
+				<Code size={20} class="text-red-500 dark:text-red-400" />
+				<span class="text-sm text-red-700 dark:text-red-300">{errors.general}</span>
 			</div>
 		</div>
 	{/if}
@@ -286,16 +286,16 @@
 	{#if testResult}
 		<div
 			class="rounded-lg border p-4 {testResult === 'success'
-				? 'border-green-200 bg-green-50'
-				: 'border-red-200 bg-red-50'}"
+				? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+				: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'}"
 		>
 			<div class="flex items-center gap-2">
 				{#if testResult === 'success'}
-					<CircleCheckBig size={20} class="text-green-500" />
-					<span class="text-sm text-green-700">{testMessage}</span>
+					<CircleCheckBig size={20} class="text-green-500 dark:text-green-400" />
+					<span class="text-sm text-green-700 dark:text-green-300">{testMessage}</span>
 				{:else}
-					<Code size={20} class="text-red-500" />
-					<span class="text-sm text-red-700">{testMessage}</span>
+					<Code size={20} class="text-red-500 dark:text-red-400" />
+					<span class="text-sm text-red-700 dark:text-red-300">{testMessage}</span>
 				{/if}
 			</div>
 		</div>

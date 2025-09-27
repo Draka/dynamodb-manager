@@ -36,13 +36,13 @@
 
 <div class="flex h-full flex-col">
 	<!-- Barra de pestañas -->
-	<div class="flex items-center border-b border-gray-300 bg-gray-100">
+	<div class="flex items-center border-b border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800">
 		{#each tabs as tab (tab.id)}
 			<button
-				class="flex items-center gap-2 border-r border-gray-300 px-4 py-3 text-sm font-medium transition-all duration-200 first:border-l-0 {activeTab ===
+				class="flex items-center gap-2 border-r border-gray-300 px-4 py-3 text-sm font-medium transition-all duration-200 first:border-l-0 dark:border-gray-600 {activeTab ===
 				tab.id
-					? '-mb-px border-b-2 border-blue-500 bg-white text-gray-900'
-					: 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}"
+					? '-mb-px border-b-2 border-blue-500 bg-white text-gray-900 dark:bg-gray-900 dark:text-white'
+					: 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'}"
 				onclick={() => handleTabClick(tab.id)}
 			>
 				<!-- Icono -->
@@ -66,7 +66,7 @@
 	</div>
 
 	<!-- Contenido de la pestaña activa -->
-	<div class="relative flex-1 overflow-hidden bg-white">
+	<div class="relative flex-1 overflow-hidden bg-white dark:bg-gray-900">
 		{#if children}
 			{@render children()}
 		{/if}
