@@ -11,6 +11,7 @@
 	import { dynamoDbApi } from '../../services/api-client.js';
 	import { Plus, X, Save, RotateCcw, Type, CircleQuestionMark, Eye } from 'lucide-svelte';
 	import JsonEditor from './JsonEditor.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let {
 		/** @type {Object} Registro a editar */
@@ -290,7 +291,7 @@
 				if (isNaN(Number(trimmedValue))) return 'Debe ser un número válido';
 				break;
 			case 'BOOL':
-				if (!trimmedValue) return 'Valor boolean requerido';
+				if (!trimmedValue) return '{m["recordEditorAdvanced.value"]()} boolean requerido';
 				if (!['true', 'false'].includes(trimmedValue.toLowerCase())) {
 					return 'Debe ser true o false';
 				}
@@ -415,7 +416,7 @@
 				const keys = attributes.map((a) => a.key.trim());
 				const duplicates = keys.filter((key, index) => keys.indexOf(key) !== index);
 				if (duplicates.length > 0) {
-					error = `Claves duplicadas encontradas: ${duplicates.join(', ')}`;
+					error = `{m["recordEditorAdvanced.key"]()}s duplicadas encontradas: ${duplicates.join(', ')}`;
 					saving = false;
 					return;
 				}
@@ -517,7 +518,7 @@
 	 * Maneja el cierre del editor
 	 */
 	function handleClose() {
-		if (hasChanges && !confirm('¿Descartar cambios sin guardar?')) {
+		if (hasChanges && !confirm(m["recordEditorAdvanced.discardChanges"]())) {
 			return;
 		}
 
@@ -605,9 +606,9 @@
 		<div class="border-b border-gray-200 dark:border-gray-700 p-4">
 			<div class="flex items-center justify-between">
 				<div>
-					<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Editor de Registro</h2>
+					<h2 class="text-xl font-semibold text-gray-900 dark:text-white">{m["recordEditorAdvanced.title"]()}</h2>
 					<p class="text-sm text-gray-600 dark:text-gray-300">
-						Tabla: <code class="rounded bg-gray-100 dark:bg-gray-700 px-1 text-gray-900 dark:text-gray-100">{tableName}</code>
+						{m["recordEditorAdvanced.tableLabel"]()} <code class="rounded bg-gray-100 dark:bg-gray-700 px-1 text-gray-900 dark:text-gray-100">{tableName}</code>
 					</p>
 				</div>
 
@@ -621,7 +622,7 @@
 							onclick={() => (editMode = 'attributes')}
 							disabled={saving}
 						>
-							Atributos
+							{m["recordEditorAdvanced.attributes"]()}
 						</button>
 						<button
 							class="rounded-md px-3 py-1 text-sm transition-colors {editMode === 'json'
@@ -641,20 +642,20 @@
 							disabled={saving}
 						>
 							<Eye size={16} />
-							{showPreview ? 'Ocultar' : 'Vista'} JSON
+							{showPreview ? m["recordEditorAdvanced.hide"]() : m["recordEditorAdvanced.view"]()} JSON
 						</Button>
 					{/if}
 
 					{#if hasChanges}
 						<Button variant="secondary" onclick={resetChanges} disabled={saving}>
 							<RotateCcw size={16} />
-							Resetear
+							{m["recordEditorAdvanced.reset"]()}
 						</Button>
 					{/if}
 
 					<Button onclick={saveChanges} loading={saving} disabled={!hasChanges}>
 						<Save size={16} />
-						Guardar
+						{m["button.save"]()}
 					</Button>
 				</div>
 			</div>
@@ -687,10 +688,10 @@
 					<div class="space-y-4">
 						<!-- Add attribute button -->
 						<div class="flex items-center justify-between">
-							<h3 class="text-lg font-medium text-gray-900 dark:text-white">Atributos ({attributes.length})</h3>
+							<h3 class="text-lg font-medium text-gray-900 dark:text-white">{m["recordEditorAdvanced.attributes"]()} ({attributes.length})</h3>
 							<Button size="sm" onclick={addAttribute} disabled={saving}>
 								<Plus size={16} />
-								Agregar Atributo
+								{m["recordEditorAdvanced.addAttribute"]()}
 							</Button>
 						</div>
 
@@ -701,7 +702,7 @@
 									<!-- Key -->
 									<div class="col-span-3">
 										<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="attr-key">
-											Clave
+											{m["recordEditorAdvanced.key"]()}
 										</label>
 										<TextInput
 											id="attr-key"
@@ -715,7 +716,7 @@
 									<!-- Type -->
 									<div class="col-span-3">
 										<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="attr-type">
-											Tipo
+											{m["recordEditorAdvanced.type"]()}
 										</label>
 										<Select
 											id="attr-type"
@@ -730,7 +731,7 @@
 									<!-- Value -->
 									<div class="col-span-6">
 										<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="attr-value">
-											Valor
+											{m["recordEditorAdvanced.value"]()}
 											{#if ['L', 'M'].includes(attr.type)}
 												<span class="text-xs text-gray-500 dark:text-gray-400">(JSON)</span>
 											{:else if ['SS', 'NS', 'BS'].includes(attr.type)}
@@ -804,8 +805,8 @@
 						{#if attributes.length === 0}
 							<div class="py-8 text-center text-gray-500 dark:text-gray-400">
 								<Type size={48} class="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
-								<p>No hay atributos definidos</p>
-								<p class="text-sm">Haz clic en "Agregar Atributo" para comenzar</p>
+								<p>{m["recordEditorAdvanced.noAttributes"]()}</p>
+								<p class="text-sm">Haz clic en "{m["recordEditorAdvanced.addAttribute"]()}" para comenzar</p>
 							</div>
 						{/if}
 					</div>
@@ -818,9 +819,9 @@
 			<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
 				<CircleQuestionMark size={16} />
 				<span>
-					Tipos: String (S), Number (N), Boolean (BOOL), List (L), Map (M), Sets (SS/NS/BS)
+					{m["recordEditorAdvanced.typesInfo"]()}
 					{#if hasChanges}
-						• <strong>Cambios sin guardar</strong>
+						• <strong>{m["recordEditorAdvanced.unsavedChanges"]()}</strong>
 					{/if}
 				</span>
 			</div>

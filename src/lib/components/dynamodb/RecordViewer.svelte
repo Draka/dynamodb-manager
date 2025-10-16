@@ -22,6 +22,7 @@
 		ChevronRight,
 		Loader
 	} from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * @typedef {Object} Record
@@ -521,10 +522,10 @@
 	<div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
 		<div>
 			<h3 class="text-lg font-medium text-gray-900 dark:text-white">
-				Datos de {tableName}
+				{m["recordViewer.dataFrom"]({ tableName })}
 			</h3>
 			<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-				{totalItems} registros encontrados
+				{m["recordViewer.recordsFound"]({ count: totalItems })}
 			</p>
 		</div>
 
@@ -567,11 +568,11 @@
 	<div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
 		<div class="flex flex-col gap-4 sm:flex-row">
 			<div class="flex-1">
-				<TextInput bind:value={searchTerm} placeholder="Buscar..." />
+				<TextInput bind:value={searchTerm} placeholder={m["recordViewer.search"]()} />
 			</div>
 
 			<div class="sm:w-48">
-				<Select bind:value={searchField} options={availableFields} placeholder="Campo a buscar" />
+				<Select bind:value={searchField} options={availableFields} placeholder={m["recordViewer.searchField"]()} />
 			</div>
 
 			<div class="flex gap-2">
@@ -584,7 +585,7 @@
 					Buscar
 				</Button>
 
-				<Button variant="ghost" size="sm" onclick={clearSearch} disabled={loading}>Limpiar</Button>
+				<Button variant="ghost" size="sm" onclick={clearSearch} disabled={loading}>{m["recordViewer.clear"]()}</Button>
 			</div>
 		</div>
 	</div>
@@ -592,25 +593,25 @@
 	<!-- Estados de carga y error -->
 	{#if loading}
 		<div class="py-12 text-center">
-			<LoadingSpinner size="lg" text="Cargando registros..." center />
+			<LoadingSpinner size="lg" text={m["recordViewer.loading"]()} center />
 		</div>
 	{:else if error}
 		<div class="py-12 text-center">
 			<AlertTriangle size={48} class="mx-auto text-red-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error cargando datos</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["recordViewer.errorLoading"]()}</h3>
 			<p class="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
 			<div class="mt-6">
-				<Button variant="primary" onclick={refreshData}>Reintentar</Button>
+				<Button variant="primary" onclick={refreshData}>{m["button.retry"]()}</Button>
 			</div>
 		</div>
 	{:else if records.length === 0}
 		<div class="py-12 text-center">
 			<Archive size={48} class="mx-auto text-gray-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin registros</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["recordViewer.noRecords"]()}</h3>
 			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 				{searchTerm
-					? 'No se encontraron registros con los filtros aplicados.'
-					: 'Esta tabla no contiene registros.'}
+					? m["recordViewer.noRecordsFound"]()
+					: m["recordViewer.emptyTable"]()}
 			</p>
 		</div>
 	{:else}
@@ -635,7 +636,7 @@
 		<div class="flex flex-col items-center justify-between gap-4 border-t border-gray-200 dark:border-gray-700 pt-4 sm:flex-row">
 			<div class="flex items-center gap-4">
 				<span class="text-sm text-gray-700 dark:text-gray-300">
-					Página {currentPage}
+					{m["recordViewer.page"]({ page: currentPage })}
 				</span>
 				<Select
 					value={itemsPerPage.toString()}
@@ -656,7 +657,7 @@
 				</Button>
 
 				<Button variant="secondary" size="sm" onclick={goToNextPage} disabled={!lastEvaluatedKey}>
-					Siguiente
+					{m["recordViewer.next"]()}
 					<ChevronRight size={16} class="ml-2" />
 				</Button>
 			</div>
@@ -687,7 +688,7 @@
 		}}
 		role="button"
 		tabindex="0"
-		aria-label="Cerrar modal de confirmación"
+		aria-label={m["recordEditor.closeModalAriaLabel"]()}
 	>
 		<div
 			class="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl"
@@ -700,7 +701,7 @@
 			}}
 			role="button"
 			tabindex="0"
-			aria-label="Contenido del modal"
+			aria-label={m["recordEditor.modalContentAriaLabel"]()}
 		>
 			<!-- Header -->
 			<div class="mb-4 flex items-center gap-3">
@@ -708,19 +709,19 @@
 					<AlertTriangle size={24} class="text-red-600" />
 				</div>
 				<div class="flex-1">
-					<h3 class="text-lg font-medium text-gray-900 dark:text-white">Confirmar Eliminación</h3>
-					<p class="text-sm text-gray-600 dark:text-gray-300">Esta acción no se puede deshacer</p>
+					<h3 class="text-lg font-medium text-gray-900 dark:text-white">{m["recordEditor.confirmDeletion"]()}</h3>
+					<p class="text-sm text-gray-600 dark:text-gray-300">{m["recordEditor.cannotUndo"]()}</p>
 				</div>
 			</div>
 
 			<!-- Contenido -->
 			<div class="mb-6">
 				<p class="mb-2 text-sm text-gray-700 dark:text-gray-300">
-					¿Estás seguro de que deseas eliminar este registro?
+					{m["recordEditor.confirmDeleteQuestion"]()}
 				</p>
 				<div class="rounded-md bg-gray-50 dark:bg-gray-700 p-3">
 					{#if deletingRecord}
-						<div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Clave primaria del registro:</div>
+						<div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">{m["recordEditor.primaryKey"]()}</div>
 						<div class="font-mono text-sm text-gray-900 dark:text-gray-100">
 							{getPrimaryKeyDescription(deletingRecord)}
 						</div>
@@ -746,7 +747,7 @@
 				>
 					{#if deleting}
 						<Loader class="mr-2 animate-spin" />
-						Eliminando...
+						{m["recordEditor.deleting"]()}
 					{:else}
 						Eliminar
 					{/if}

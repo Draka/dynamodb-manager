@@ -5,6 +5,7 @@
 <script>
 	import { Copy, MapPin, SquarePen, Edit3 } from 'lucide-svelte';
 	import InlineFieldEditor from '$lib/components/ui/InlineFieldEditor.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * @typedef {Object} Record
@@ -105,9 +106,9 @@
 
 		if (typeof value === 'object') {
 			if (Array.isArray(value)) {
-				return `[${value.length} items]`;
+				return m["record.arrayItems"]({ count: value.length });
 			}
-			return '{objeto}';
+			return m["record.object"]({ object: JSON.stringify(value) });
 		}
 
 		if (typeof value === 'boolean') {
@@ -250,7 +251,7 @@
 						<th
 							class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 px-3 py-3 text-left text-xs font-medium tracking-wider text-gray-500 dark:text-gray-300 uppercase"
 						>
-							Acciones
+							{m["record.actions"]()}
 						</th>
 					{/if}
 					{#each columns() as column (column)}
@@ -287,10 +288,10 @@
 											type="button"
 											class="rounded-md p-1.5 text-gray-400 dark:text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
 											onclick={() => onEditRecord?.(record)}
-											title="Editar registro"
+											title={m["record.edit"]()}
 										>
 											<SquarePen size={16} />
-											<span class="sr-only">Editar registro</span>
+											<span class="sr-only">{m["record.edit"]()}</span>
 										</button>
 									{/if}
 									{#if onDeleteRecord}
@@ -298,7 +299,7 @@
 											type="button"
 											class="rounded-md p-1.5 text-gray-400 dark:text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
 											onclick={() => onDeleteRecord?.(record)}
-											title="Eliminar registro"
+											title={m["record.delete"]()}
 										>
 											<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path
@@ -308,7 +309,7 @@
 													d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
 												/>
 											</svg>
-											<span class="sr-only">Eliminar registro</span>
+											<span class="sr-only">{m["record.delete"]()}</span>
 										</button>
 									{/if}
 								</div>
@@ -343,9 +344,7 @@
 										<!-- Valor normal -->
 										<button
 											class="cursor-pointer rounded px-2 py-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-											title="Clic para copiar: {typeof value === 'object'
-												? JSON.stringify(value)
-												: String(value)}"
+											title={m["record.copyTooltip"]({ value: formattedValue })}
 											onclick={() => copyToClipboard(value)}
 										>
 											{formattedValue}
@@ -357,10 +356,10 @@
 												type="button"
 												class="text-blue-500 dark:text-blue-400 opacity-0 transition-all group-hover:opacity-100 hover:text-blue-700 dark:hover:text-blue-300"
 												onclick={() => startInlineEdit(index, column, value)}
-												title="Editar campo"
+												title={m["record.editField"]()}
 											>
 												<Edit3 size={12} />
-												<span class="sr-only">Editar campo</span>
+												<span class="sr-only">{m["record.editField"]()}</span>
 											</button>
 										{/if}
 
@@ -370,10 +369,10 @@
 												type="button"
 												class="text-gray-400 dark:text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:opacity-100"
 												onclick={() => copyToClipboard(value)}
-												title="Copiar valor"
+												title={m["record.copy"]()}
 											>
 												<Copy size={12} />
-												<span class="sr-only">Copiar valor</span>
+												<span class="sr-only">{m["record.copy"]()}</span>
 											</button>
 										{/if}
 									{/if}
@@ -389,8 +388,8 @@
 	<!-- Footer con información -->
 	<div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
 		<div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-			<span>{records.length} registros mostrados</span>
-			<span>{columns.length} columnas</span>
+			<span>{m["record.shown"]({ count: records.length })}</span>
+			<span>{m["record.columns"]({ count: columns.length })}</span>
 		</div>
 	</div>
 </div>

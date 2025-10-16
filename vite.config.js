@@ -13,32 +13,34 @@ export default defineConfig({
 		})
 	],
 	test: {
-		expect: { requireAssertions: true },
-		projects: [
-			{
-				extends: './vite.config.js',
-				test: {
-					name: 'client',
-					environment: 'browser',
-					browser: {
-						enabled: true,
-						provider: 'playwright',
-						instances: [{ browser: 'chromium' }]
-					},
-					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: ['src/lib/server/**'],
-					setupFiles: ['./vitest-setup-client.js']
-				}
-			},
-			{
-				extends: './vite.config.js',
-				test: {
-					name: 'server',
-					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}'],
-					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
+		globals: true,
+		environment: 'jsdom',
+		include: ['src/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
+		setupFiles: ['./tests/setup/vitest-setup.js'],
+		alias: {
+			$lib: new URL('./src/lib', import.meta.url).pathname,
+			$app: new URL('./src/app', import.meta.url).pathname
+		},
+		coverage: {
+			provider: 'v8',
+			reporter: ['text', 'json', 'html'],
+			exclude: [
+				'node_modules/',
+				'tests/',
+				'src/lib/paraglide/',
+				'**/*.config.js',
+				'electron/',
+				'dist/',
+				'build/'
+			],
+			thresholds: {
+				global: {
+					branches: 80,
+					functions: 90,
+					lines: 85,
+					statements: 85
 				}
 			}
-		]
+		}
 	}
 });

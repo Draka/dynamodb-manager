@@ -7,6 +7,7 @@
 	import { connections, removeConnection, markConnectionUsed } from '../../stores/connections.js';
 	import { currentConnection, setConnection } from '../../stores/current-connection.js';
 	import { HardDrive, SquarePen } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * @typedef {import('../../services/aws-config.js').AWSConnection} AWSConnection
@@ -63,7 +64,7 @@
 		event.stopPropagation();
 
 		const confirmed = confirm(
-			`¿Estás seguro de eliminar la conexión "${connection.name}"?\n\nEsta acción no se puede deshacer.`
+			m['connection.deleteConfirm']({ name: connection.name })
 		);
 
 		if (confirmed) {
@@ -95,7 +96,7 @@
 		<div class="py-8 text-center">
 			<HardDrive size={24} class="mx-auto {theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}" />
 			<p class="mt-3 text-sm {theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}">
-				No hay conexiones guardadas
+				{m["connection.noConnections"]()}
 			</p>
 		</div>
 	{:else}
@@ -132,7 +133,7 @@
 								{#if connection.endpoint}
 									<span
 										class="rounded-full bg-yellow-500 px-2 py-1 text-xs font-medium text-yellow-900"
-										>Local</span
+										>{m["connection.local"]()}</span
 									>
 								{/if}
 							</div>
@@ -159,8 +160,8 @@
 											? 'text-gray-400 hover:bg-white hover:text-white'
 											: 'text-gray-500 hover:bg-gray-500 hover:text-gray-700'}"
 										onclick={(e) => editConnection(connection, e)}
-										title="Editar conexión"
-										aria-label="Editar conexión"
+										title={m["connection.editAriaLabel"]()}
+										aria-label={m["connection.editAriaLabel"]()}
 									>
 										<SquarePen size={12} />
 									</button>
@@ -169,8 +170,8 @@
 								<button
 									class="hover:bg-opacity-20 rounded p-1 text-red-500 hover:bg-red-500 hover:text-red-600"
 									onclick={(e) => deleteConnection(connection, e)}
-									title="Eliminar conexión"
-									aria-label="Eliminar conexión"
+									title={m["connection.deleteAriaLabel"]()}
+									aria-label={m["connection.deleteAriaLabel"]()}
 								>
 									<svg
 										class="h-3 w-3"

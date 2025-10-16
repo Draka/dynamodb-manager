@@ -9,6 +9,7 @@
 	import { TextInput } from './Input';
 	import { Modal } from './Modal';
 	import { AlertTriangle, Info } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let {
 		/** @type {boolean} Si el modal está abierto */
@@ -75,9 +76,9 @@
 				<AlertTriangle size={24} class="text-red-600" />
 			</div>
 			<div>
-				<h3 class="text-lg font-medium text-gray-900">Eliminar tabla</h3>
+				<h3 class="text-lg font-medium text-gray-900">{m["deleteTableModal.title"]()}</h3>
 				<p class="text-sm text-gray-500">
-					{connectionName} • {isLocal ? 'Local' : 'AWS'}
+					{connectionName} • {isLocal ? m["connection.local"]() : 'AWS'}
 				</p>
 			</div>
 		</div>
@@ -87,16 +88,9 @@
 			<div class="mb-4">
 				<p class="text-sm text-gray-700">
 					{#if isLocal}
-						¿Estás seguro de que deseas eliminar la tabla
-						<code class="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm font-medium"
-							>{tableName}</code
-						>?
+						{@html m["deleteTableModal.areYouSure"]({ tableName: `<code class="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm font-medium">${tableName}</code>` })}
 					{:else}
-						¿Estás seguro de que deseas eliminar permanentemente la tabla
-						<code class="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm font-medium"
-							>{tableName}</code
-						>
-						de AWS?
+						{@html m["deleteTableModal.areYouSureAWS"]({ tableName: `<code class="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm font-medium">${tableName}</code>` })}
 					{/if}
 				</p>
 			</div>
@@ -109,10 +103,9 @@
 							<AlertTriangle size={20} class="text-yellow-400" />
 						</div>
 						<div class="ml-3">
-							<h4 class="text-sm font-medium text-yellow-800">Confirmación requerida</h4>
+							<h4 class="text-sm font-medium text-yellow-800">{m["deleteTableModal.confirmationRequired"]()}</h4>
 							<p class="mt-1 text-sm text-yellow-700">
-								Esta acción eliminará permanentemente la tabla y todos sus datos de AWS DynamoDB.
-								Esta operación <strong>no se puede deshacer</strong>.
+								{@html m["deleteTableModal.confirmationDesc"]()}
 							</p>
 						</div>
 					</div>
@@ -120,13 +113,13 @@
 
 				<div class="mt-4">
 					<label for="confirmation" class="block text-sm font-medium text-gray-700">
-						Para confirmar, escribe el nombre de la tabla:
+						{m["deleteTableModal.typeTableName"]()}
 					</label>
 					<div class="mt-2">
 						<TextInput
 							id="confirmation"
 							bind:value={confirmationText}
-							placeholder="Escribe: {tableName}"
+							placeholder={m["deleteTableModal.typePlaceholder"]({ tableName })}
 							disabled={isDeleting}
 							class="font-mono"
 						/>
@@ -141,7 +134,7 @@
 						</div>
 						<div class="ml-3">
 							<p class="text-sm text-orange-700">
-								Esta acción eliminará la tabla y todos sus datos del DynamoDB local.
+								{m["deleteTableModal.warningLocal"]()}
 							</p>
 						</div>
 					</div>
@@ -151,9 +144,9 @@
 
 		<!-- Footer con botones -->
 		<div class="mt-6 flex justify-end gap-3">
-			<Button variant="secondary" onclick={handleClose} disabled={isDeleting}>Cancelar</Button>
+			<Button variant="secondary" onclick={handleClose} disabled={isDeleting}>{m["button.cancel"]()}</Button>
 			<Button variant="danger" onclick={handleConfirm} disabled={!canDelete} loading={isDeleting}>
-				{isDeleting ? 'Eliminando...' : 'Eliminar tabla'}
+				{isDeleting ? m["deleteTableModal.deleting"]() : m["deleteTableModal.deleteTable"]()}
 			</Button>
 		</div>
 	</div>

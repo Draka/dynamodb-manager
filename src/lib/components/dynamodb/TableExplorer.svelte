@@ -22,6 +22,7 @@
 		HardDrive,
 		Eraser
 	} from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * @typedef {Object} TableInfo
@@ -89,12 +90,12 @@
 				// Cargar detalles básicos para las primeras tablas
 				loadTableDetailsInBackground(response.data.slice(0, 5));
 			} else {
-				const errorMsg = response.error || 'Error desconocido cargando tablas';
+				const errorMsg = response.error || m["errors.unknown"]();
 				updateConnectionTables($activeConnectionId, [], false, errorMsg);
 				console.error('Error en respuesta de tablas:', response.error);
 			}
 		} catch (/** @type {any} */ err) {
-			const errorMsg = `Error cargando tablas: ${err.message}`;
+			const errorMsg = m["errors.loadingFailed"]({ message: err.message });
 			updateConnectionTables($activeConnectionId, [], false, errorMsg);
 			console.error('Error cargando tablas:', err);
 		}
@@ -209,11 +210,11 @@
 				closeDeleteModal();
 			} else {
 				console.error(`❌ Error eliminando tabla: ${response.error}`);
-				alert(`Error eliminando tabla: ${response.error}`);
+				alert(m["errors.deletingFailed"]({ message: response.error }));
 			}
 		} catch (/** @type {any} */ error) {
 			console.error('Error eliminando tabla:', error);
-			alert(`Error eliminando tabla: ${error.message}`);
+			alert(m["errors.deletingFailed"]({ message: error.message }));
 		}
 	}
 
@@ -252,7 +253,7 @@
 			const response = await dynamoDbApi.clearTableItems(clearItemsModal.tableName);
 
 			if (response.success) {
-				const message = response.message || `Registros eliminados exitosamente`;
+				const message = response.message || m["tableExplorer.recordsDeletedSuccess"]();
 				alert(message);
 				closeClearItemsModal();
 
@@ -275,11 +276,11 @@
 				}
 			} else {
 				console.error(`❌ Error limpiando registros: ${response.error}`);
-				alert(`Error limpiando registros: ${response.error}`);
+				alert(m["errors.deletingFailed"]({ message: response.error }));
 			}
 		} catch (/** @type {any} */ error) {
 			console.error('Error limpiando registros:', error);
-			alert(`Error limpiando registros: ${error.message}`);
+			alert(m["errors.deletingFailed"]({ message: error.message }));
 		} finally {
 			clearItemsModal.isProcessing = false;
 		}
@@ -376,7 +377,7 @@
 	<!-- Header con búsqueda -->
 	<div class="flex items-center gap-2 p-2">
 		<div class="flex-1">
-			<TextInput bind:value={searchTerm} placeholder="Buscar tablas..." />
+			<TextInput bind:value={searchTerm} placeholder={m["table.search"]()} />
 		</div>
 
 		<Button
@@ -385,10 +386,10 @@
 			onclick={refreshTables}
 			disabled={tablesLoading || !connection}
 			loading={tablesLoading}
-			title="Refrescar"
+			title={m["table.refresh"]()}
 		>
 			<RefreshCw size={16} />
-			<span class="sr-only">Refrescar</span>
+			<span class="sr-only">{m["table.refresh"]()}</span>
 		</Button>
 	</div>
 
@@ -396,47 +397,47 @@
 	{#if !connection}
 		<div class="py-12 text-center">
 			<Lock size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin conexión</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["table.noConnection"]()}</h3>
 			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-				Selecciona una conexión para ver las tablas disponibles.
+				{m["table.selectConnection"]()}
 			</p>
 		</div>
 	{:else if tablesLoading}
 		<!-- Estado de carga -->
 		<div class="py-12 text-center">
-			<LoadingSpinner size="lg" text="Cargando tablas..." center />
+			<LoadingSpinner size="lg" text={m["table.loading"]()} center />
 		</div>
 	{:else if tablesError}
 		<!-- Estado de error -->
 		<div class="py-12 text-center">
 			<AlertTriangle size={48} class="mx-auto text-red-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error cargando tablas</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["table.errorLoading"]()}</h3>
 			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{tablesError}</p>
 			<div class="mt-6">
-				<Button variant="primary" onclick={refreshTables}>Reintentar</Button>
+				<Button variant="primary" onclick={refreshTables}>{m["table.retry"]()}</Button>
 			</div>
 		</div>
 	{:else if filteredTables.length === 0 && tables.length === 0}
 		<!-- Sin tablas -->
 		<div class="py-12 text-center">
 			<Table size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay tablas</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No se encontraron tablas DynamoDB en esta región.</p>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["table.noTables"]()}</h3>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{m["table.noTablesFound"]()}</p>
 		</div>
 	{:else if filteredTables.length === 0}
 		<!-- Sin resultados de búsqueda -->
 		<div class="py-12 text-center">
 			<Search size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin resultados</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["table.noResults"]()}</h3>
 			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-				No se encontraron tablas que coincidan con "{searchTerm}".
+				{m["table.noResultsFor"]({ search: searchTerm })}
 			</p>
 		</div>
 	{:else}
 		<!-- Lista de tablas -->
 		<div class="flex-1 space-y-2 overflow-y-auto p-2">
 			<div class="mb-3 text-sm text-gray-500 dark:text-gray-400">
-				Mostrando {filteredTables.length} de {tables.length} tablas
+				{m["table.showing"]({ filtered: filteredTables.length, total: tables.length })}
 			</div>
 
 			{#each filteredTables as tableName (tableName)}
@@ -467,12 +468,12 @@
 									e.stopPropagation();
 									openClearItemsModal(tableName);
 								}}
-								title="Borrar todos los registros"
+								title={m["table.clearItems"]()}
 							>
 								<Eraser size={12} />
-								<span class="sr-only">Borrar todos los registros</span>
+								<span class="sr-only">{m["table.clearItems"]()}</span>
 							</button>
-							
+
 							<!-- Botón de eliminar tabla -->
 							<button
 								class="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:bg-red-600"
@@ -480,10 +481,10 @@
 									e.stopPropagation();
 									openDeleteModal(tableName);
 								}}
-								title="Eliminar tabla"
+								title={m["table.deleteTable"]()}
 							>
 								<Trash2 size={12} />
-								<span class="sr-only">Eliminar tabla</span>
+								<span class="sr-only">{m["table.deleteTable"]()}</span>
 							</button>
 						</div>
 						<div class="min-w-0 flex-1">
@@ -508,7 +509,7 @@
 							{#if isLoadingDetails}
 								<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
 									<LoadingSpinner size="sm" />
-									<span>Cargando detalles...</span>
+									<span>{m["table.loadingDetails"]()}</span>
 								</div>
 							{:else if details}
 								<div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
@@ -518,7 +519,7 @@
 											<div class="flex items-center gap-1">
 												<Key size={16} />
 												<span
-													>PK: <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700">{keys.hashKey}</code
+													>{m["table.pk"]()}: <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700">{keys.hashKey}</code
 													></span
 												>
 											</div>
@@ -526,7 +527,7 @@
 											{#if keys.rangeKey}
 												<div class="flex items-center gap-1">
 													<span
-														>SK: <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700"
+														>{m["table.sk"]()}: <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700"
 															>{keys.rangeKey}</code
 														></span
 													>
@@ -540,7 +541,7 @@
 										{#if details.ItemCount !== undefined}
 											<div class="flex items-center gap-1">
 												<Table size={16} />
-												<span>{formatItemCount(details.ItemCount)} items</span>
+												<span>{formatItemCount(details.ItemCount)} {m["table.items"]()}</span>
 											</div>
 										{/if}
 
@@ -553,7 +554,7 @@
 									</div>
 								</div>
 							{:else}
-								<div class="text-sm text-gray-500 dark:text-gray-400">Clic para cargar detalles</div>
+								<div class="text-sm text-gray-500 dark:text-gray-400">{m["table.clickToLoad"]()}</div>
 							{/if}
 						</div>
 
@@ -586,32 +587,31 @@
 		<div class="max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
 			<div class="mb-4">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-					Confirmar eliminación de registros
+					{m["tableExplorer.confirmClearItems"]()}
 				</h3>
 				<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-					¿Estás seguro de que quieres <strong>borrar todos los registros</strong> de la tabla
-					<span class="font-mono bg-gray-100 px-1 rounded dark:bg-gray-700">{clearItemsModal.tableName}</span>?
+					{m["tableExplorer.confirmClearItemsDesc"]({ tableName: clearItemsModal.tableName })}
 				</p>
 				<p class="mt-2 text-sm text-red-600 dark:text-red-400">
-					⚠️ Esta acción no se puede deshacer. Solo se eliminarán los registros, la tabla permanecerá.
+					{m["tableExplorer.confirmClearItemsWarning"]()}
 				</p>
 			</div>
 
 			<div class="flex justify-end gap-3">
-				<Button 
-					variant="secondary" 
+				<Button
+					variant="secondary"
 					onclick={closeClearItemsModal}
 					disabled={clearItemsModal.isProcessing}
 				>
-					Cancelar
+					{m["button.cancel"]()}
 				</Button>
-				<Button 
-					variant="destructive" 
+				<Button
+					variant="destructive"
 					onclick={handleClearItems}
 					disabled={clearItemsModal.isProcessing}
 					loading={clearItemsModal.isProcessing}
 				>
-					{clearItemsModal.isProcessing ? 'Eliminando...' : 'Eliminar todos'}
+					{clearItemsModal.isProcessing ? m["tableExplorer.deleting"]() : m["tableExplorer.deleteAll"]()}
 				</Button>
 			</div>
 		</div>
