@@ -1,0 +1,31 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"hello_world": "Hello, {name} from en!",
+	"app": {
+		"title": "DynamoDB Manager",
+		"description": "Visual manager for DynamoDB databases"
+	},
+	"navigation": {
+		"newConnection": "New Connection",
+		"connections": "Connections",
+		"hidePanel": "Hide panel",
+		"showConnections": "Show connections"
+	},
+	"connection": {
+		"name": "Connection Name",
+		"nameHelp": "Descriptive name to identify this connection",
+		"region": "AWS Region",
+		"regionHelp": "AWS region code where your DynamoDB tables are located",
+		"endpoint": "Endpoint URL (Optional)",
+		"endpointHelp": "Custom endpoint URL. Leave empty to use official AWS",
+		"accessKeyId": "Access Key ID",
+		"accessKeyIdPlaceholder": "AKIAIOSFODNN7EXAMPLE",
+		"accessKeyIdHelp": "Your AWS Access Key ID (20 characters)",
+		"secretAccessKey": "Secret Access Key",
+		"secretAccessKeyHelp": "Your AWS Secret Access Key (keep secret)",
+		"sessionToken": "Session Token (Optional)",
+		"sessionTokenPlaceholder": "Temporary session token",
+		"sessionTokenHelp": "Only needed if using temporary credentials",
+		"editConnection": "Edit connection"
+	}
+}
