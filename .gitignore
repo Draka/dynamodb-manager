@@ -58,3 +58,8 @@ src/lib/paraglide
 /latest.yml
 /latest-mac.yml
 /latest-linux.yml
+
+# Backup files
+*.bak
+*.backup
+*.tmp
