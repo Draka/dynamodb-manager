@@ -35,8 +35,9 @@
 	--color-text-secondary: #d1d5db;
 	--color-text-muted: #9ca3af;
 
-	--color-border-primary: #374151;
-	--color-border-secondary: #4b5563;
+	/* Bordes más visibles en modo oscuro para mejor contraste */
+	--color-border-primary: #4b5563;
+	--color-border-secondary: #6b7280;
 
 	/* Colores de estado para tema oscuro */
 	--color-success: #34d399;

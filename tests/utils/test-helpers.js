@@ -40,12 +40,8 @@ export function createMockConnection() {
 export function createMockTableData() {
 	return {
 		TableName: 'TestTable',
-		KeySchema: [
-			{ AttributeName: 'id', KeyType: 'HASH' }
-		],
-		AttributeDefinitions: [
-			{ AttributeName: 'id', AttributeType: 'S' }
-		],
+		KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
+		AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
 		TableStatus: 'ACTIVE',
 		ItemCount: 5,
 		TableSizeBytes: 1024
@@ -84,7 +80,7 @@ export function createMockScanResponse(items = createMockItems()) {
  * @returns {Promise} Promise que resuelve después del delay
  */
 export function delay(ms = 0) {
-	return new Promise(resolve => setTimeout(resolve, ms));
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**

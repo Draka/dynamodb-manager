@@ -7,9 +7,12 @@
 	import TableView from './TableView.svelte';
 	import JsonView from './JsonView.svelte';
 	import DynamoDBRecordEditor from './DynamoDBRecordEditor.svelte';
+	import ConfirmDeleteModal from '../ui/ConfirmDeleteModal.svelte';
 	import { TextInput, Select } from '../ui';
 	import { dynamoDbApi } from '../../services/api-client.js';
+	import { notifySuccess, notifyError } from '../../stores/notifications.js';
 	import { Search, Play, Download, CircleAlert } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * @typedef {import('../../services/aws-config.js').DynamoDBTableInfo} TableInfo
@@ -38,6 +41,11 @@
 	let editorOpen = $state(false);
 	let editingRecord = $state(/** @type {Object | null} */ (null));
 
+	/** Estados de confirmación de eliminación */
+	let deleteConfirmOpen = $state(false);
+	let recordToDelete = $state(/** @type {Object | null} */ (null));
+	let isDeleting = $state(false);
+
 	/** Query configuration */
 	let queryConfig = $state({
 		/** @type {'query' | 'scan'} */
@@ -48,9 +56,26 @@
 		partitionKey: '',
 		/** @type {string} */
 		partitionValue: '',
+		/** @type {string} */
+		sortKeyOperator: '=',
+		/** @type {string} */
+		sortKeyValue: '',
+		/** @type {string} */
+		sortKeyValue2: '',
 		/** @type {number} */
 		limit: 100
 	});
+
+	/** Operadores disponibles para la Sort Key */
+	const sortKeyOperators = [
+		{ value: '=', label: '= (Igual)' },
+		{ value: '<', label: '< (Menor que)' },
+		{ value: '<=', label: '<= (Menor o igual)' },
+		{ value: '>', label: '> (Mayor que)' },
+		{ value: '>=', label: '>= (Mayor o igual)' },
+		{ value: 'begins_with', label: 'Comienza con' },
+		{ value: 'between', label: 'Entre (between)' }
+	];
 
 	/**
 	 * Cargar información de la tabla
@@ -99,20 +124,33 @@
 			let response;
 
 			if (queryConfig.operation === 'query') {
-				// Construir parámetros de query
 				const partitionKeyName = getCurrentPartitionKey() || queryConfig.partitionKey;
+				const sortKeyName = getCurrentSortKey();
 
 				/** @type {any} */
 				const params = {
 					limit: queryConfig.limit,
 					keyCondition: `#pk = :pkval`,
-					expressionAttributeNames: {
-						'#pk': partitionKeyName
-					},
-					expressionAttributeValues: {
-						':pkval': queryConfig.partitionValue
-					}
+					expressionAttributeNames: { '#pk': partitionKeyName },
+					expressionAttributeValues: { ':pkval': queryConfig.partitionValue }
 				};
+
+				// Agregar condición de Sort Key si se especificó valor
+				if (sortKeyName && queryConfig.sortKeyValue) {
+					params.expressionAttributeNames['#sk'] = sortKeyName;
+
+					if (queryConfig.sortKeyOperator === 'between') {
+						params.keyCondition += ` AND #sk BETWEEN :skval1 AND :skval2`;
+						params.expressionAttributeValues[':skval1'] = queryConfig.sortKeyValue;
+						params.expressionAttributeValues[':skval2'] = queryConfig.sortKeyValue2;
+					} else if (queryConfig.sortKeyOperator === 'begins_with') {
+						params.keyCondition += ` AND begins_with(#sk, :skval)`;
+						params.expressionAttributeValues[':skval'] = queryConfig.sortKeyValue;
+					} else {
+						params.keyCondition += ` AND #sk ${queryConfig.sortKeyOperator} :skval`;
+						params.expressionAttributeValues[':skval'] = queryConfig.sortKeyValue;
+					}
+				}
 
 				// Agregar índice si está seleccionado
 				if (queryConfig.selectedIndex) {
@@ -159,6 +197,7 @@
 	/**
 	 * Obtener índices disponibles
 	 */
+	/** @type {Array<{ value: string; label: string; type: string; partitionKey?: string }>} */
 	let indexOptions = $state([]);
 
 	/**
@@ -167,26 +206,39 @@
 	function getIndexOptions() {
 		if (!tableInfo) return [];
 
+		/** @type {Array<{ value: string; label: string; type: string; partitionKey?: string }>} */
 		const options = [{ value: '', label: tableName, type: 'table' }];
 
-		if (tableInfo.GlobalSecondaryIndexes) {
-			tableInfo.GlobalSecondaryIndexes.forEach((gsi) => {
+		const gsis =
+			/** @type {Array<{ IndexName: string; KeySchema?: { KeyType: string; AttributeName: string }[] }>} */ (
+				tableInfo.GlobalSecondaryIndexes
+			);
+		if (gsis) {
+			gsis.forEach((gsi) => {
 				options.push({
 					value: gsi.IndexName,
 					label: `${gsi.IndexName} (GSI)`,
 					type: 'gsi',
-					partitionKey: gsi.KeySchema?.find((k) => k.KeyType === 'HASH')?.AttributeName
+					partitionKey: gsi.KeySchema?.find(
+						(/** @param {{ KeyType: string }} k */ k) => k.KeyType === 'HASH'
+					)?.AttributeName
 				});
 			});
 		}
 
-		if (tableInfo.LocalSecondaryIndexes) {
-			tableInfo.LocalSecondaryIndexes.forEach((lsi) => {
+		const lsis =
+			/** @type {Array<{ IndexName: string; KeySchema?: { KeyType: string; AttributeName: string }[] }>} */ (
+				tableInfo.LocalSecondaryIndexes
+			);
+		if (lsis) {
+			lsis.forEach((lsi) => {
 				options.push({
 					value: lsi.IndexName,
 					label: `${lsi.IndexName} (LSI)`,
 					type: 'lsi',
-					partitionKey: lsi.KeySchema?.find((k) => k.KeyType === 'HASH')?.AttributeName
+					partitionKey: lsi.KeySchema?.find(
+						(/** @param {{ KeyType: string }} k */ k) => k.KeyType === 'HASH'
+					)?.AttributeName
 				});
 			});
 		}
@@ -199,13 +251,37 @@
 	 */
 	function getCurrentPartitionKey() {
 		if (!queryConfig.selectedIndex) {
-			// Tabla principal
 			return queryConfig.partitionKey;
 		}
-
-		// Buscar en los índices
 		const selectedOption = indexOptions.find((opt) => opt.value === queryConfig.selectedIndex);
 		return selectedOption?.partitionKey || queryConfig.partitionKey;
+	}
+
+	/**
+	 * Obtener la Sort Key del esquema actual (tabla o índice seleccionado)
+	 */
+	function getCurrentSortKey() {
+		if (!tableInfo) return null;
+
+		if (!queryConfig.selectedIndex) {
+			// Tabla principal
+			const sk = /** @type {Array<{ KeyType: string; AttributeName: string }>} */ (
+				tableInfo.KeySchema
+			)?.find((k) => k.KeyType === 'RANGE');
+			return sk?.AttributeName || null;
+		}
+
+		// Buscar en GSI o LSI
+		const allIndexes = [
+			.../** @type {any[]} */ (tableInfo.GlobalSecondaryIndexes || []),
+			.../** @type {any[]} */ (tableInfo.LocalSecondaryIndexes || [])
+		];
+		const idx = allIndexes.find((i) => i.IndexName === queryConfig.selectedIndex);
+		if (!idx?.KeySchema) return null;
+		const sk = /** @type {Array<{ KeyType: string; AttributeName: string }>} */ (
+			idx.KeySchema
+		).find((k) => k.KeyType === 'RANGE');
+		return sk?.AttributeName || null;
 	}
 
 	/**
@@ -215,9 +291,10 @@
 		const currentPartitionKey = getCurrentPartitionKey();
 		if (currentPartitionKey && currentPartitionKey !== queryConfig.partitionKey) {
 			queryConfig.partitionKey = currentPartitionKey;
-			// Limpiar el valor cuando cambia la clave
 			queryConfig.partitionValue = '';
 		}
+		queryConfig.sortKeyValue = '';
+		queryConfig.sortKeyValue2 = '';
 	}
 
 	// Cargar info de tabla al montar
@@ -251,34 +328,62 @@
 	}
 
 	/**
-	 * Manejar eliminación de registro
+	 * Manejar eliminación de registro (muestra confirmación)
 	 * @param {Object} record - Registro a eliminar
 	 */
-	async function handleDeleteRecord(record) {
-		if (!tableName) return;
+	function handleDeleteRecord(record) {
+		recordToDelete = record;
+		deleteConfirmOpen = true;
+	}
 
+	/**
+	 * Confirmar y ejecutar eliminación de registro
+	 */
+	async function confirmDeleteRecord() {
+		if (!tableName || !recordToDelete) return;
+
+		isDeleting = true;
 		error = '';
 
 		try {
 			// Extraer claves primarias del registro
+			/** @type {Record<string, any>} */
 			const key = {};
-			if (tableInfo?.KeySchema) {
-				tableInfo.KeySchema.forEach((keyDef) => {
-					key[keyDef.AttributeName] = record[keyDef.AttributeName];
+			const rec = /** @type {Record<string, any>} */ (recordToDelete);
+			if (tableInfo?.KeySchema && rec) {
+				/** @type {Array<{ AttributeName: string }>} */ (tableInfo.KeySchema).forEach((keyDef) => {
+					key[keyDef.AttributeName] = rec[keyDef.AttributeName];
 				});
 			}
 
 			const response = await dynamoDbApi.deleteItem(tableName, key);
 
 			if (response.success) {
+				notifySuccess(m['notifications.recordDeleted']());
 				// Recargar los resultados
 				await executeQuery();
+				// Cerrar modal
+				deleteConfirmOpen = false;
+				recordToDelete = null;
 			} else {
-				error = response.error || 'Error eliminando registro';
+				error = response.error || m['notifications.deleteError']();
+				notifyError(error);
 			}
 		} catch (/** @type {any} */ err) {
 			error = `Error: ${err.message}`;
+			notifyError(error);
+		} finally {
+			isDeleting = false;
 		}
+	}
+
+	/**
+	 * Cancelar eliminación
+	 */
+	function cancelDeleteRecord() {
+		deleteConfirmOpen = false;
+		recordToDelete = null;
+		isDeleting = false;
 	}
 
 	/**
@@ -292,15 +397,18 @@
 			const response = await dynamoDbApi.putItem(tableName, updatedRecord);
 
 			if (response.success) {
+				notifySuccess(m['notifications.recordSaved']());
 				// Recargar los resultados
 				await executeQuery();
 				editorOpen = false;
 				editingRecord = null;
 			} else {
-				error = response.error || 'Error guardando registro';
+				error = response.error || m['notifications.saveError']();
+				notifyError(error);
 			}
 		} catch (/** @type {any} */ err) {
 			error = `Error: ${err.message}`;
+			notifyError(error);
 		}
 	}
 
@@ -311,30 +419,80 @@
 		editorOpen = false;
 		editingRecord = null;
 	}
+
+	/**
+	 * Extrae las claves primarias del registro para identificar el item
+	 * @param {Object} record - Registro
+	 * @returns {Object} Claves primarias
+	 */
+	/** @param {Record<string, any>} record */
+	function extractKeys(record) {
+		/** @type {Record<string, any>} */
+		const keys = {};
+		if (tableInfo?.KeySchema) {
+			tableInfo.KeySchema.forEach((keyDef) => {
+				if (record[keyDef.AttributeName] !== undefined) {
+					keys[keyDef.AttributeName] = record[keyDef.AttributeName];
+				}
+			});
+		}
+		return keys;
+	}
+
+	/**
+	 * Actualiza un campo de un registro (edición inline en la tabla)
+	 * @param {Object} record - Registro completo
+	 * @param {string} field - Campo a actualizar
+	 * @param {any} value - Nuevo valor
+	 */
+	async function handleUpdateField(record, field, value) {
+		if (!tableName || !connectionId) return;
+
+		try {
+			const updatedRecord = { ...record, [field]: value };
+			const response = await dynamoDbApi.putItem(tableName, updatedRecord);
+
+			if (response.success) {
+				error = '';
+				notifySuccess(m['notifications.fieldUpdated']());
+				const recordKeys = extractKeys(record);
+				const arr = Array.isArray(results) ? results : [];
+				results = arr.map((/** @type {any} */ r) =>
+					JSON.stringify(extractKeys(r)) === JSON.stringify(recordKeys) ? updatedRecord : r
+				);
+			} else {
+				error = response.error || m['notifications.updateError']();
+				notifyError(error);
+			}
+		} catch (/** @type {any} */ err) {
+			error = `${m['notifications.updateError']()}: ${err.message}`;
+			notifyError(error);
+		}
+	}
 </script>
 
 <div class="flex h-full flex-col">
 	<!-- Header -->
-	<div class="border-b border-gray-200 bg-white px-6 py-4">
+	<div class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
 		<div class="flex items-center justify-between">
-			<h2 class="text-xl font-semibold text-gray-900">Elementos de la tabla</h2>
+			<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Elementos de la tabla</h2>
 			<div class="flex items-center gap-4">
 				<!-- Toggle vista tabla/JSON -->
 				{#if results.length > 0}
 					<!-- Toggle de modo de edición -->
-					<div class="flex rounded-lg bg-gray-100 p-1">
+					<div class="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700">
 						<button
 							class="rounded-md px-3 py-1 text-sm transition-colors {viewMode === 'table'
-								? 'bg-white text-gray-900 shadow-sm'
-								: 'text-gray-600 hover:text-gray-900'}"
+								? 'bg-white text-gray-900 shadow-sm dark:bg-gray-600 dark:text-white'
+								: 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'}"
 							onclick={() => (viewMode = 'table')}
 						>
 							Tabla
 						</button>
 						<button
 							class="rounded-md px-3 py-1 text-sm transition-colors {viewMode === 'json'
-								? 'bg-white text-gray-900 shadow-sm'
-								: 'text-gray-600 hover:text-gray-900'}"
+								? 'bg-white text-gray-900 shadow-sm dark:bg-gray-600 dark:text-white'
+								: 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'}"
 							onclick={() => (viewMode = 'json')}
 						>
 							JSON
@@ -356,7 +514,9 @@
 		</div>
 	</div>
 	<!-- Configuración -->
-	<div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+	<div
+		class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50"
+	>
 		<div class="space-y-4">
 			<!-- Selector Examen/Consulta -->
 			<div>
@@ -366,25 +526,28 @@
 							type="radio"
 							bind:group={queryConfig.operation}
 							value="scan"
-							class="mr-2 text-blue-600"
+							class="mr-2 text-blue-600 dark:text-blue-400"
 						/>
-						<span class="text-sm font-medium text-gray-700">Examen</span>
+						<span class="text-sm font-medium text-gray-700 dark:text-gray-300">Examen</span>
 					</label>
 					<label class="flex items-center">
 						<input
 							type="radio"
 							bind:group={queryConfig.operation}
 							value="query"
-							class="mr-2 text-blue-600"
+							class="mr-2 text-blue-600 dark:text-blue-400"
 						/>
-						<span class="text-sm font-medium text-gray-700">Consulta</span>
+						<span class="text-sm font-medium text-gray-700 dark:text-gray-300">Consulta</span>
 					</label>
 				</div>
 			</div>
 
 			<!-- Selector de tabla/índice -->
 			<div>
-				<label for="table-index-selector" class="mb-1 block text-sm font-medium text-gray-700">
+				<label
+					for="table-index-selector"
+					class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+				>
 					Seleccione una tabla o un índice
 				</label>
 				<Select
@@ -399,8 +562,13 @@
 			{#if queryConfig.operation === 'query'}
 				<div class="grid grid-cols-2 gap-4">
 					<div>
-						<label for="partition-key-value" class="mb-1 block text-sm font-medium text-gray-700">
-							Clave de partición: {getCurrentPartitionKey() || 'Nombre del campo'}
+						<label
+							for="partition-key-value"
+							class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+						>
+							Clave de partición: <span class="font-mono text-blue-600 dark:text-blue-400"
+								>{getCurrentPartitionKey() || '...'}</span
+							>
 						</label>
 						<TextInput
 							id="partition-key-value"
@@ -410,7 +578,9 @@
 						/>
 					</div>
 					<div>
-						<label for="limit-query" class="mb-1 block text-sm font-medium text-gray-700"
+						<label
+							for="limit-query"
+							class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
 							>Límite de resultados</label
 						>
 						<TextInput
@@ -423,10 +593,70 @@
 						/>
 					</div>
 				</div>
+
+				<!-- Sort Key (opcional) -->
+				{#if getCurrentSortKey()}
+					{@const sortKeyName = getCurrentSortKey()}
+					<div
+						class="rounded-md border border-gray-200 bg-white p-4 dark:border-gray-600 dark:bg-gray-800"
+					>
+						<div class="mb-3 flex items-center gap-2">
+							<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+								Clave de ordenación: <span class="font-mono text-blue-600 dark:text-blue-400"
+									>{sortKeyName}</span
+								>
+							</span>
+							<span
+								class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+								>Opcional</span
+							>
+						</div>
+						<div
+							class="grid gap-3 {queryConfig.sortKeyOperator === 'between'
+								? 'grid-cols-3'
+								: 'grid-cols-2'}"
+						>
+							<div>
+								<label for="sk-operator" class="mb-1 block text-xs text-gray-500 dark:text-gray-400"
+									>Condición</label
+								>
+								<Select
+									id="sk-operator"
+									bind:value={queryConfig.sortKeyOperator}
+									options={sortKeyOperators}
+								/>
+							</div>
+							<div>
+								<label for="sk-value" class="mb-1 block text-xs text-gray-500 dark:text-gray-400">
+									{queryConfig.sortKeyOperator === 'between' ? 'Valor desde' : 'Valor'}
+								</label>
+								<TextInput
+									id="sk-value"
+									bind:value={queryConfig.sortKeyValue}
+									placeholder="Dejar vacío para ignorar"
+								/>
+							</div>
+							{#if queryConfig.sortKeyOperator === 'between'}
+								<div>
+									<label for="sk-value2" class="mb-1 block text-xs text-gray-500 dark:text-gray-400"
+										>Valor hasta</label
+									>
+									<TextInput
+										id="sk-value2"
+										bind:value={queryConfig.sortKeyValue2}
+										placeholder="Valor final"
+									/>
+								</div>
+							{/if}
+						</div>
+					</div>
+				{/if}
 			{:else}
 				<!-- Límite para scan -->
 				<div>
-					<label for="limit-scan" class="mb-1 block text-sm font-medium text-gray-700"
+					<label
+						for="limit-scan"
+						class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
 						>Límite de resultados</label
 					>
 					<TextInput
@@ -446,10 +676,10 @@
 	<div class="flex flex-1 flex-col overflow-hidden">
 		<!-- Error -->
 		{#if error}
-			<div class="border-b border-red-200 bg-red-50 p-4">
+			<div class="border-b border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
 				<div class="flex items-center gap-2">
-					<CircleAlert size={20} class="text-red-500" />
-					<span class="text-sm text-red-700">{error}</span>
+					<CircleAlert size={20} class="text-red-500 dark:text-red-400" />
+					<span class="text-sm text-red-700 dark:text-red-300">{error}</span>
 				</div>
 			</div>
 		{/if}
@@ -459,8 +689,8 @@
 			{#if isLoading}
 				<div class="flex h-full items-center justify-center">
 					<div class="text-center">
-						<Search size={48} class="mx-auto mb-4 animate-pulse text-gray-400" />
-						<p class="text-gray-600">
+						<Search size={48} class="mx-auto mb-4 animate-pulse text-gray-400 dark:text-gray-500" />
+						<p class="text-gray-600 dark:text-gray-400">
 							Ejecutando {queryConfig.operation === 'scan' ? 'examen' : 'consulta'}...
 						</p>
 					</div>
@@ -473,6 +703,7 @@
 							records={results}
 							onEditRecord={handleEditRecord}
 							onDeleteRecord={handleDeleteRecord}
+							onUpdateField={handleUpdateField}
 							{tableInfo}
 						/>
 					{:else}
@@ -487,11 +718,11 @@
 				<!-- Estado inicial -->
 				<div class="flex h-full items-center justify-center">
 					<div class="max-w-md text-center">
-						<Search size={48} class="mx-auto mb-4 text-gray-400" />
-						<h3 class="mb-2 text-lg font-medium text-gray-900">
+						<Search size={48} class="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+						<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
 							{queryConfig.operation === 'scan' ? 'Configurar examen' : 'Configurar consulta'}
 						</h3>
-						<div class="space-y-2 text-sm text-gray-600">
+						<div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
 							{#if queryConfig.operation === 'scan'}
 								<p>Configure el límite y filtros opcionales, luego haga clic en "Ejecutar"</p>
 							{:else}
@@ -515,3 +746,15 @@
 		onSave={handleSaveRecord}
 	/>
 {/if}
+
+<!-- Modal de confirmación de eliminación -->
+<ConfirmDeleteModal
+	bind:open={deleteConfirmOpen}
+	title={m['confirmDelete.title']()}
+	message={m['confirmDelete.message']()}
+	recordKeys={recordToDelete ? extractKeys(recordToDelete) : null}
+	{tableName}
+	{isDeleting}
+	onConfirm={confirmDeleteRecord}
+	onCancel={cancelDeleteRecord}
+/>

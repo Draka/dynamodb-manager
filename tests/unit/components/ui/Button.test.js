@@ -117,7 +117,7 @@ describe('Button Component', () => {
 				});
 
 				const button = getByRole('button');
-				classes.forEach(className => {
+				classes.forEach((className) => {
 					expect(button).toHaveClass(className);
 				});
 			});
@@ -148,7 +148,7 @@ describe('Button Component', () => {
 				});
 
 				const button = getByRole('button');
-				classes.forEach(className => {
+				classes.forEach((className) => {
 					expect(button).toHaveClass(className);
 				});
 			});

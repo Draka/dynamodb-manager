@@ -10,6 +10,8 @@
  * @property {string} TableStatus - Estado de la tabla
  * @property {string} TableSizeBytes - Tamaño de la tabla en bytes
  * @property {any[]} KeySchema - Esquema de claves de la tabla
+ * @property {Array<{ IndexName: string; KeySchema?: { KeyType: string; AttributeName: string }[] }>} [GlobalSecondaryIndexes]
+ * @property {Array<{ IndexName: string; KeySchema?: { KeyType: string; AttributeName: string }[] }>} [LocalSecondaryIndexes]
  */
 
 /**
@@ -163,10 +165,10 @@ export function generateConnectionId() {
 export function maskCredentials(credentials) {
 	return {
 		accessKeyId: credentials.accessKeyId
-			? `${credentials.accessKeyId.substr(0, 4)}${'*'.repeat(12)}${credentials.accessKeyId.substr(-4)}`
+			? `${'*'.repeat(16)}${credentials.accessKeyId.slice(-4)}`
 			: '',
 		secretAccessKey: credentials.secretAccessKey
-			? `${'*'.repeat(36)}${credentials.secretAccessKey.substr(-4)}`
+			? `${'*'.repeat(36)}${credentials.secretAccessKey.slice(-4)}`
 			: '',
 		sessionToken: credentials.sessionToken ? '***' : undefined
 	};

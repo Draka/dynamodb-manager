@@ -3,7 +3,13 @@
  * Proporciona todas las operaciones CRUD y utilidades
  */
 
-import { DynamoDBClient, DeleteTableCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import {
+	DynamoDBClient,
+	DeleteTableCommand,
+	PutItemCommand,
+	ListTablesCommand,
+	DescribeTableCommand
+} from '@aws-sdk/client-dynamodb';
 import {
 	DynamoDBDocumentClient,
 	ScanCommand,
@@ -34,6 +40,8 @@ import { createAWSConfig } from './aws-config.js';
  * @property {number} [limit] - Límite de items
  * @property {Object} [lastEvaluatedKey] - Clave de paginación
  * @property {boolean} [scanIndexForward] - Orden ascendente/descendente
+ * @property {Record<string, string>} [expressionAttributeNames]
+ * @property {Record<string, any>} [expressionAttributeValues]
  */
 
 /**
@@ -67,7 +75,6 @@ export class DynamoDBService {
 	 */
 	async listTables() {
 		try {
-			const { ListTablesCommand } = await import('@aws-sdk/client-dynamodb');
 			const command = new ListTablesCommand({});
 			const response = await this.client.send(command);
 			return response.TableNames || [];
@@ -84,7 +91,6 @@ export class DynamoDBService {
 	 */
 	async describeTable(tableName) {
 		try {
-			const { DescribeTableCommand } = await import('@aws-sdk/client-dynamodb');
 			const command = new DescribeTableCommand({ TableName: tableName });
 			const response = await this.client.send(command);
 			return response.Table || {};
@@ -101,35 +107,63 @@ export class DynamoDBService {
 	 */
 	async scanTable(params) {
 		try {
+			const requestedLimit = params.limit || 0;
+
 			/** @type {any} */
-			const scanParams = {
+			const baseScanParams = {
 				TableName: params.tableName,
-				...(params.limit && { Limit: params.limit }),
 				...(params.lastEvaluatedKey && { ExclusiveStartKey: params.lastEvaluatedKey })
 			};
 
 			// Agregar expresiones de filtro si están presentes
 			if (params.filterExpression) {
-				scanParams.FilterExpression = params.filterExpression;
+				baseScanParams.FilterExpression = params.filterExpression;
 			}
 
 			if (params.expressionAttributeNames) {
-				scanParams.ExpressionAttributeNames = params.expressionAttributeNames;
+				baseScanParams.ExpressionAttributeNames = params.expressionAttributeNames;
 			}
 
 			if (params.expressionAttributeValues) {
-				scanParams.ExpressionAttributeValues = params.expressionAttributeValues;
+				baseScanParams.ExpressionAttributeValues = params.expressionAttributeValues;
 			}
 
-			const command = new ScanCommand(scanParams);
+			// Scan iterativo: DynamoDB puede devolver menos items que el límite
+			// solicitado si alcanza el límite de 1MB por respuesta. Seguimos
+			// escaneando hasta completar el límite o agotar los datos.
+			/** @type {any[]} */
+			let allItems = [];
+			let lastKey = baseScanParams.ExclusiveStartKey;
+			let totalScannedCount = 0;
 
-			const response = await this.docClient.send(command);
+			while (true) {
+				const remaining = requestedLimit ? requestedLimit - allItems.length : 0;
+				/** @type {any} */
+				const scanParams = {
+					...baseScanParams,
+					...(requestedLimit && { Limit: remaining }),
+					...(lastKey && { ExclusiveStartKey: lastKey })
+				};
+
+				const command = new ScanCommand(scanParams);
+				const response = await this.docClient.send(command);
+
+				const items = response.Items || [];
+				allItems = allItems.concat(items);
+				totalScannedCount += response.ScannedCount || 0;
+				lastKey = response.LastEvaluatedKey;
+
+				// Parar si: no hay más datos, o ya tenemos suficientes items
+				if (!lastKey || (requestedLimit && allItems.length >= requestedLimit)) {
+					break;
+				}
+			}
 
 			return {
-				items: response.Items || [],
-				lastEvaluatedKey: response.LastEvaluatedKey,
-				count: response.Count || 0,
-				scannedCount: response.ScannedCount || 0
+				items: allItems,
+				lastEvaluatedKey: lastKey,
+				count: allItems.length,
+				scannedCount: totalScannedCount
 			};
 		} catch (/** @type {any} */ error) {
 			console.error('Error en scan:', error);
@@ -144,28 +178,58 @@ export class DynamoDBService {
 	 */
 	async queryTable(params) {
 		try {
-			const command = new QueryCommand(
-				/**@type {any} */ ({
-					TableName: params.tableName,
-					KeyConditionExpression: params.keyCondition,
-					...(params.filterExpression && { FilterExpression: params.filterExpression }),
-					...(params.indexName && { IndexName: params.indexName }),
-					...(params.limit && { Limit: params.limit }),
-					...(params.lastEvaluatedKey && { ExclusiveStartKey: params.lastEvaluatedKey }),
-					...(params.scanIndexForward !== undefined && {
-						ScanIndexForward: params.scanIndexForward
-					}),
-					...(params.expressionAttributeNames && { ExpressionAttributeNames: params.expressionAttributeNames }),
-					...(params.expressionAttributeValues && { ExpressionAttributeValues: params.expressionAttributeValues })
-				})
-			);
+			const requestedLimit = params.limit || 0;
 
-			const response = await this.docClient.send(command);
+			/** @type {any} */
+			const baseQueryParams = {
+				TableName: params.tableName,
+				KeyConditionExpression: params.keyCondition,
+				...(params.filterExpression && { FilterExpression: params.filterExpression }),
+				...(params.indexName && { IndexName: params.indexName }),
+				...(params.lastEvaluatedKey && { ExclusiveStartKey: params.lastEvaluatedKey }),
+				...(params.scanIndexForward !== undefined && {
+					ScanIndexForward: params.scanIndexForward
+				}),
+				...(params.expressionAttributeNames && {
+					ExpressionAttributeNames: params.expressionAttributeNames
+				}),
+				...(params.expressionAttributeValues && {
+					ExpressionAttributeValues: params.expressionAttributeValues
+				})
+			};
+
+			// Query iterativa: DynamoDB puede devolver menos items que el límite
+			// solicitado si alcanza el límite de 1MB por respuesta.
+			/** @type {any[]} */
+			let allItems = [];
+			let lastKey = baseQueryParams.ExclusiveStartKey;
+
+			while (true) {
+				const remaining = requestedLimit ? requestedLimit - allItems.length : 0;
+				/** @type {any} */
+				const queryParams = {
+					...baseQueryParams,
+					...(requestedLimit && { Limit: remaining }),
+					...(lastKey && { ExclusiveStartKey: lastKey })
+				};
+
+				const command = new QueryCommand(queryParams);
+				const response = await this.docClient.send(command);
+
+				const items = response.Items || [];
+				allItems = allItems.concat(items);
+				lastKey = response.LastEvaluatedKey;
+
+				// Parar si: no hay más datos, o ya tenemos suficientes items
+				if (!lastKey || (requestedLimit && allItems.length >= requestedLimit)) {
+					break;
+				}
+			}
 
 			return {
-				items: response.Items || [],
-				lastEvaluatedKey: response.LastEvaluatedKey,
-				count: response.Count || 0
+				items: allItems,
+				lastEvaluatedKey: lastKey,
+				count: allItems.length
 			};
 		} catch (/** @type {any} */ error) {
 			console.error('Error en query:', error);

@@ -42,9 +42,12 @@ export async function GET({ cookies, request }) {
 			success: true,
 			data: tables
 		});
-	} catch (error) {
+	} catch (/** @type {unknown} */ error) {
 		console.error('Error listando tablas:', error);
 
-		return json({ success: false, error: error.message }, { status: 500 });
+		return json(
+			{ success: false, error: error instanceof Error ? error.message : String(error) },
+			{ status: 500 }
+		);
 	}
 }

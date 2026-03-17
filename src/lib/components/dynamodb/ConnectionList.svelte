@@ -63,9 +63,7 @@
 	function deleteConnection(connection, event) {
 		event.stopPropagation();
 
-		const confirmed = confirm(
-			m['connection.deleteConfirm']({ name: connection.name })
-		);
+		const confirmed = confirm(m['connection.deleteConfirm']({ name: connection.name }));
 
 		if (confirmed) {
 			removeConnection(connection.id);
@@ -96,7 +94,7 @@
 		<div class="py-8 text-center">
 			<HardDrive size={24} class="mx-auto {theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}" />
 			<p class="mt-3 text-sm {theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}">
-				{m["connection.noConnections"]()}
+				{m['connection.noConnections']()}
 			</p>
 		</div>
 	{:else}
@@ -133,7 +131,7 @@
 								{#if connection.endpoint}
 									<span
 										class="rounded-full bg-yellow-500 px-2 py-1 text-xs font-medium text-yellow-900"
-										>{m["connection.local"]()}</span
+										>{m['connection.local']()}</span
 									>
 								{/if}
 							</div>
@@ -160,8 +158,8 @@
 											? 'text-gray-400 hover:bg-white hover:text-white'
 											: 'text-gray-500 hover:bg-gray-500 hover:text-gray-700'}"
 										onclick={(e) => editConnection(connection, e)}
-										title={m["connection.editAriaLabel"]()}
-										aria-label={m["connection.editAriaLabel"]()}
+										title={m['connection.editAriaLabel']()}
+										aria-label={m['connection.editAriaLabel']()}
 									>
 										<SquarePen size={12} />
 									</button>
@@ -170,8 +168,8 @@
 								<button
 									class="hover:bg-opacity-20 rounded p-1 text-red-500 hover:bg-red-500 hover:text-red-600"
 									onclick={(e) => deleteConnection(connection, e)}
-									title={m["connection.deleteAriaLabel"]()}
-									aria-label={m["connection.deleteAriaLabel"]()}
+									title={m['connection.deleteAriaLabel']()}
+									aria-label={m['connection.deleteAriaLabel']()}
 								>
 									<svg
 										class="h-3 w-3"

@@ -3,7 +3,7 @@
  * Maneja el estado de la conexión activa y el servicio DynamoDB
  */
 
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import {
 	getCurrentConnectionFromCookie,
@@ -139,10 +139,7 @@ export async function testCurrentConnection() {
  * @returns {AWSConnection | null} Conexión actual o null
  */
 export function getCurrentConnection() {
-	let connection = null;
-	const unsubscribe = currentConnection.subscribe((value) => (connection = value));
-	unsubscribe();
-	return connection;
+	return get(currentConnection);
 }
 
 /**
@@ -165,22 +162,19 @@ export async function reconnect() {
  */
 export async function autoReconnect() {
 	const connection = getCurrentConnection();
-	
+
 	if (!connection) {
 		return false;
 	}
 
-	console.log('Intentando reconexión automática...');
 	connectionStatus.set('reconnecting');
-	
+
 	try {
 		const success = await testCurrentConnection();
-		
+
 		if (success) {
-			console.log('Reconexión automática exitosa');
 			return true;
 		} else {
-			console.log('Reconexión automática falló');
 			connectionStatus.set('error');
 			return false;
 		}
@@ -194,14 +188,15 @@ export async function autoReconnect() {
 /**
  * Observa el estado de conexión y reintenta automáticamente si es necesario
  */
+/** @type {ReturnType<typeof setTimeout> | null} */
 let autoReconnectTimeout = null;
-connectionStatus.subscribe((status) => {
+const unsubscribeAutoReconnect = connectionStatus.subscribe((status) => {
 	if (status === 'error') {
 		// Limpiar timeout previo si existe
 		if (autoReconnectTimeout) {
 			clearTimeout(autoReconnectTimeout);
 		}
-		
+
 		// Intentar reconexión después de 3 segundos
 		autoReconnectTimeout = setTimeout(async () => {
 			await autoReconnect();
@@ -214,3 +209,15 @@ connectionStatus.subscribe((status) => {
 		}
 	}
 });
+
+/**
+ * Limpia la suscripción de auto-reconexión y timeouts pendientes
+ * Llamar al desmontar la aplicación o en cleanup de tests
+ */
+export function destroyAutoReconnect() {
+	unsubscribeAutoReconnect();
+	if (autoReconnectTimeout) {
+		clearTimeout(autoReconnectTimeout);
+		autoReconnectTimeout = null;
+	}
+}

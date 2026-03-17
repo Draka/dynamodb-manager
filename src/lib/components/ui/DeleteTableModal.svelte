@@ -33,6 +33,16 @@
 	/** Validación para eliminar */
 	const canDelete = $derived(isLocal ? true : confirmationText.trim() === tableName);
 
+	/** Escapa HTML para evitar XSS al insertar tableName en @html */
+	/** @param {string} str */
+	function escapeHtml(str) {
+		return String(str)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;');
+	}
+
 	/**
 	 * Maneja la confirmación de eliminación
 	 */
@@ -76,9 +86,9 @@
 				<AlertTriangle size={24} class="text-red-600" />
 			</div>
 			<div>
-				<h3 class="text-lg font-medium text-gray-900">{m["deleteTableModal.title"]()}</h3>
+				<h3 class="text-lg font-medium text-gray-900">{m['deleteTableModal.title']()}</h3>
 				<p class="text-sm text-gray-500">
-					{connectionName} • {isLocal ? m["connection.local"]() : 'AWS'}
+					{connectionName} • {isLocal ? m['connection.local']() : 'AWS'}
 				</p>
 			</div>
 		</div>
@@ -88,9 +98,15 @@
 			<div class="mb-4">
 				<p class="text-sm text-gray-700">
 					{#if isLocal}
-						{@html m["deleteTableModal.areYouSure"]({ tableName: `<code class="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm font-medium">${tableName}</code>` })}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- tableName escaped with escapeHtml() -->
+						{@html m['deleteTableModal.areYouSure']({
+							tableName: `<code class="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm font-medium">${escapeHtml(tableName)}</code>`
+						})}
 					{:else}
-						{@html m["deleteTableModal.areYouSureAWS"]({ tableName: `<code class="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm font-medium">${tableName}</code>` })}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- tableName escaped with escapeHtml() -->
+						{@html m['deleteTableModal.areYouSureAWS']({
+							tableName: `<code class="rounded bg-gray-100 px-1 py-0.5 font-mono text-sm font-medium">${escapeHtml(tableName)}</code>`
+						})}
 					{/if}
 				</p>
 			</div>
@@ -103,9 +119,12 @@
 							<AlertTriangle size={20} class="text-yellow-400" />
 						</div>
 						<div class="ml-3">
-							<h4 class="text-sm font-medium text-yellow-800">{m["deleteTableModal.confirmationRequired"]()}</h4>
+							<h4 class="text-sm font-medium text-yellow-800">
+								{m['deleteTableModal.confirmationRequired']()}
+							</h4>
 							<p class="mt-1 text-sm text-yellow-700">
-								{@html m["deleteTableModal.confirmationDesc"]()}
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -- message from i18n with safe <strong> -->
+								{@html m['deleteTableModal.confirmationDesc']()}
 							</p>
 						</div>
 					</div>
@@ -113,13 +132,13 @@
 
 				<div class="mt-4">
 					<label for="confirmation" class="block text-sm font-medium text-gray-700">
-						{m["deleteTableModal.typeTableName"]()}
+						{m['deleteTableModal.typeTableName']()}
 					</label>
 					<div class="mt-2">
 						<TextInput
 							id="confirmation"
 							bind:value={confirmationText}
-							placeholder={m["deleteTableModal.typePlaceholder"]({ tableName })}
+							placeholder={m['deleteTableModal.typePlaceholder']({ tableName })}
 							disabled={isDeleting}
 							class="font-mono"
 						/>
@@ -134,7 +153,7 @@
 						</div>
 						<div class="ml-3">
 							<p class="text-sm text-orange-700">
-								{m["deleteTableModal.warningLocal"]()}
+								{m['deleteTableModal.warningLocal']()}
 							</p>
 						</div>
 					</div>
@@ -144,9 +163,11 @@
 
 		<!-- Footer con botones -->
 		<div class="mt-6 flex justify-end gap-3">
-			<Button variant="secondary" onclick={handleClose} disabled={isDeleting}>{m["button.cancel"]()}</Button>
+			<Button variant="secondary" onclick={handleClose} disabled={isDeleting}
+				>{m['button.cancel']()}</Button
+			>
 			<Button variant="danger" onclick={handleConfirm} disabled={!canDelete} loading={isDeleting}>
-				{isDeleting ? m["deleteTableModal.deleting"]() : m["deleteTableModal.deleteTable"]()}
+				{isDeleting ? m['deleteTableModal.deleting']() : m['deleteTableModal.deleteTable']()}
 			</Button>
 		</div>
 	</div>

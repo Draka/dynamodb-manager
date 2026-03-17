@@ -16,6 +16,7 @@ Mientras el mercado está inundado de clientes DynamoDB costosos que cobran prec
 ## 🎯 Características
 
 ### 🔗 Gestión de Conexiones
+
 - **Múltiples conexiones simultáneas** - Trabaja con varias instancias de DynamoDB a la vez
 - **Almacenamiento seguro de credenciales** - Tus claves AWS se almacenan local y seguramente
 - **Pruebas de conexión** - Validación automática antes de conectar
@@ -23,6 +24,7 @@ Mientras el mercado está inundado de clientes DynamoDB costosos que cobran prec
 - **Reconexión automática** - Mecanismo inteligente de reintento para conexiones interrumpidas
 
 ### 📊 Operaciones de Datos
+
 - **Explorador de tablas avanzado** - Navega todas las tablas con información de esquema
 - **Modos de vista dual** - Cambia entre vista de tabla y vista JSON instantáneamente
 - **Paginación inteligente** - Navega grandes conjuntos de datos eficientemente
@@ -31,6 +33,7 @@ Mientras el mercado está inundado de clientes DynamoDB costosos que cobran prec
 - **Operaciones por lotes** - Maneja múltiples registros eficientemente
 
 ### 🛠️ Experiencia del Desarrollador
+
 - **Interfaz con pestañas** - Trabaja con múltiples tablas simultáneamente
 - **Resaltado de sintaxis** - Datos JSON con hermosa codificación de colores
 - **Validación en tiempo real** - Verificación de tipos DynamoDB (S, N, BOOL, etc.)
@@ -40,23 +43,27 @@ Mientras el mercado está inundado de clientes DynamoDB costosos que cobran prec
 ## 🚀 Inicio Rápido
 
 ### Prerrequisitos
+
 - Node.js 18+
 - npm o yarn
 
 ### Instalación
 
 1. **Clona el repositorio**
+
    ```bash
    git clone https://github.com/Draka/dynamodb-manager.git
    cd dynamodb-manager
    ```
 
 2. **Instala dependencias**
+
    ```bash
    npm install
    ```
 
 3. **Ejecuta en modo desarrollo**
+
    ```bash
    # Versión web
    npm run dev
@@ -66,6 +73,7 @@ Mientras el mercado está inundado de clientes DynamoDB costosos que cobran prec
    ```
 
 4. **Construye para producción**
+
    ```bash
    # Build web
    npm run build
@@ -102,9 +110,11 @@ docker run -p 8000:8000 amazon/dynamodb-local
 ## 📸 Capturas de Pantalla
 
 ### Interfaz Principal - Vista de Pestañas Multi-Conexión
+
 ![Interfaz Principal de DynamoDB Manager](screen/capture_001.png)
 
 **Lo que ves:**
+
 - **Panel Izquierdo**: Múltiples conexiones (DynamoDB Local + AWS) con estado de conexión
 - **Panel Central**: Explorador de tablas mostrando todas las tablas disponibles con conteo de items
 - **Panel Derecho**: Visualizador de datos con modos duales (Tabla/JSON) y paginación inteligente
@@ -132,6 +142,7 @@ Esta captura demuestra el flujo de trabajo completo: conectándose tanto a Dynam
    - Clona tu fork: `git clone https://github.com/yourusername/dynamodb-manager.git`
 
 2. **Crea una rama de característica**
+
    ```bash
    git checkout -b feature/caracteristica-increible
    ```
@@ -142,6 +153,7 @@ Esta captura demuestra el flujo de trabajo completo: conectándose tanto a Dynam
    - Actualiza la documentación según sea necesario
 
 4. **Prueba tus cambios**
+
    ```bash
    npm run test
    npm run lint
@@ -218,4 +230,4 @@ Este proyecto está licenciado bajo la Licencia MIT - consulta el archivo [LICEN
 
 **Hecho con ❤️ por desarrolladores, para desarrolladores. Gratuito para siempre.**
 
-> *"Porque las buenas herramientas no deberían costar una fortuna."*
+> _"Porque las buenas herramientas no deberían costar una fortuna."_

@@ -19,23 +19,20 @@
 		...props
 	} = $props();
 
-	/** Componente dinámico del icono */
-	const IconComponent = $derived(() => {
-		// Convertir nombre de snake-case a PascalCase si es necesario
-		const iconName = name
+	/** Componente dinámico del icono (Svelte 5: componentes dinámicos por defecto, no usar svelte:component) */
+	const iconName = $derived(
+		name
 			.split('-')
 			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-			.join('');
-
-		return Icons[iconName] || Icons.Circle;
-	});
+			.join('')
+	);
+	const IconComponent = $derived(
+		/** @type {import('svelte').Component} */ (
+			/** @type {Record<string, import('svelte').Component>} */ (/** @type {unknown} */ (Icons))[
+				iconName
+			] || Icons.Circle
+		)
+	);
 </script>
 
-<svelte:component
-	this={IconComponent()}
-	{size}
-	{color}
-	stroke-width={strokeWidth}
-	class={className}
-	{...props}
-/>
+<IconComponent {size} {color} stroke-width={strokeWidth} class={className} {...props} />

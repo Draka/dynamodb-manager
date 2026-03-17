@@ -102,8 +102,19 @@
 		"local": "Local",
 		"aws": "AWS"
 	},
+	"tableInfo": {
+		"loadError": "Error loading table information",
+		"loadTableError": "Error loading table",
+		"loadInfoError": "Error loading information",
+		"copiedToClipboard": "Copied to clipboard",
+		"copiedToClipboardWithLabel": "{label} copied to clipboard",
+		"copyArnToClipboard": "Copy ARN to clipboard"
+	},
 	"record": {
-		"actions": "Actions",
+		"numericColumnAriaLabel": "Numeric column",
+		"resizeColumnAriaLabel": "Resize column",
+		"resizeColumnTitle": "Drag to resize column",
+		"actionsTitle": "Actions",
 		"edit": "Edit record",
 		"editAriaLabel": "Edit record",
 		"delete": "Delete record",
@@ -169,7 +180,12 @@
 		"loadingFailed": "Loading failed",
 		"savingFailed": "Saving failed",
 		"deletingFailed": "Deletion failed",
-		"unknown": "Unknown error"
+		"unknown": "Unknown error",
+		"dismissAriaLabel": "Dismiss error",
+		"network": "Network Error",
+		"auth": "Authentication Error",
+		"dynamodb": "DynamoDB Error",
+		"validation": "Validation Error"
 	},
 	"workspace": {
 		"noActiveConnection": "No active connection",
@@ -182,7 +198,31 @@
 	},
 	"modal": {
 		"newConnection": "New Connection",
-		"editConnection": "Edit Connection"
+		"editConnection": "Edit Connection",
+		"closeAriaLabel": "Close modal"
+	},
+	"tabs": {
+		"closeTabTitle": "Close tab"
+	},
+	"aria": {
+		"home": "Home",
+		"closeNotification": "Close notification"
+	},
+	"keyboardShortcuts": {
+		"title": "Keyboard Shortcuts"
+	},
+	"jsonEditor": {
+		"formatJson": "Format JSON",
+		"copy": "Copy",
+		"clear": "Clear",
+		"error": "Error"
+	},
+	"tableDetails": {
+		"primaryKeyIconAriaLabel": "Primary key icon"
+	},
+	"monacoEditor": {
+		"loadError": "Could not load advanced editor. Use simple editor.",
+		"loadErrorTitle": "Error loading advanced editor"
 	},
 	"recordEditorAdvanced": {
 		"title": "Record Editor",
@@ -200,7 +240,10 @@
 		"clickToStart": "Click \"Add Attribute\" to start",
 		"typesInfo": "Types: String (S), Number (N), Boolean (BOOL), List (L), Map (M), Sets (SS/NS/BS)",
 		"unsavedChanges": "Unsaved changes",
-		"discardChanges": "Discard unsaved changes?"
+		"discardChanges": "Discard unsaved changes?",
+		"formatted": "JSON formatted successfully",
+		"formatError": "Error formatting JSON",
+		"clearContent": "Clear content"
 	},
 	"jsonView": {
 		"expandedView": "Expanded View",
@@ -210,7 +253,10 @@
 		"copyAll": "Copy All",
 		"recordNumber": "Record #{number}",
 		"noData": "No JSON data",
-		"noRecordsToShow": "No records to show in JSON format."
+		"noRecordsToShow": "No records to show in JSON format.",
+		"editRecordTitle": "Edit record",
+		"deleteRecordTitle": "Delete record",
+		"copyRecordTitle": "Copy record"
 	},
 	"queryBuilder": {
 		"title": "Table Items",
@@ -234,6 +280,36 @@
 	"inlineEditor": {
 		"enterNumber": "Enter a number",
 		"enterValue": "Enter value",
-		"mustBeValidNumber": "Must be a valid number"
+		"mustBeValidNumber": "Must be a valid number",
+		"accept": "Accept",
+		"cancelTitle": "Cancel (Esc)",
+		"acceptTitle": "Accept (Enter)"
+	},
+	"jsonEditor": {
+		"formatJson": "Format JSON",
+		"copy": "Copy",
+		"clear": "Clear",
+		"error": "Error"
+	},
+	"notifications": {
+		"copiedToClipboard": "Copied to clipboard",
+		"copyError": "Error copying to clipboard",
+		"recordDeleted": "Record deleted successfully",
+		"recordSaved": "Record saved successfully",
+		"fieldUpdated": "Field updated successfully",
+		"deleteError": "Error deleting record",
+		"saveError": "Error saving record",
+		"updateError": "Error updating field"
+	},
+	"confirmDelete": {
+		"title": "Confirm record deletion",
+		"message": "Are you sure you want to delete this record? This action cannot be undone.",
+		"table": "Table:",
+		"primaryKeys": "Primary keys:",
+		"warning": "⚠️ This action cannot be undone",
+		"warningDesc": "The record will be permanently deleted from the table.",
+		"cancel": "Cancel",
+		"delete": "Delete record",
+		"deleting": "Deleting..."
 	}
 }

@@ -42,17 +42,15 @@ function createMainWindow() {
 	});
 
 	// Cargar la aplicación
-	const startUrl = isDev 
-		? `http://localhost:${DEV_PORT}` 
-		: `http://localhost:${PORT}`;
-	
+	const startUrl = isDev ? `http://localhost:${DEV_PORT}` : `http://localhost:${PORT}`;
+
 	console.log(`Cargando aplicación desde: ${startUrl}`);
 	mainWindow.loadURL(startUrl);
 
 	// Mostrar ventana cuando esté lista
 	mainWindow.once('ready-to-show', () => {
 		mainWindow.show();
-		
+
 		// Abrir DevTools en desarrollo
 		if (isDev) {
 			mainWindow.webContents.openDevTools();
@@ -87,9 +85,9 @@ function startServer() {
 
 	return new Promise((resolve, reject) => {
 		const serverPath = path.join(__dirname, '../build/index.js');
-		
+
 		console.log('Iniciando servidor SvelteKit...');
-		
+
 		serverProcess = spawn('node', [serverPath], {
 			env: {
 				...process.env,
@@ -213,22 +211,22 @@ app.whenReady().then(async () => {
 	try {
 		// Iniciar servidor en producción
 		await startServer();
-		
+
 		// Crear ventana principal
 		createMainWindow();
-		
+
 		// Configurar menú
 		createApplicationMenu();
-		
+
 		console.log('Aplicación iniciada correctamente');
 	} catch (error) {
 		console.error('Error iniciando aplicación:', error);
-		
+
 		dialog.showErrorBox(
 			'Error al iniciar',
 			'No se pudo iniciar la aplicación. Por favor, verifica que todos los archivos estén presentes.'
 		);
-		
+
 		app.quit();
 	}
 
@@ -265,8 +263,11 @@ app.on('web-contents-created', (event, contents) => {
 	// Prevenir navegación a sitios externos
 	contents.on('will-navigate', (event, navigationUrl) => {
 		const parsedUrl = new URL(navigationUrl);
-		
-		if (parsedUrl.origin !== `http://localhost:${PORT}` && parsedUrl.origin !== `http://localhost:${DEV_PORT}`) {
+
+		if (
+			parsedUrl.origin !== `http://localhost:${PORT}` &&
+			parsedUrl.origin !== `http://localhost:${DEV_PORT}`
+		) {
 			event.preventDefault();
 		}
 	});

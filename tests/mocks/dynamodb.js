@@ -42,9 +42,7 @@ export const mockResponses = {
 			GlobalSecondaryIndexes: [
 				{
 					IndexName: 'GSI1',
-					KeySchema: [
-						{ AttributeName: 'gsi1pk', KeyType: 'HASH' }
-					]
+					KeySchema: [{ AttributeName: 'gsi1pk', KeyType: 'HASH' }]
 				}
 			]
 		}
@@ -125,9 +123,7 @@ export const mockDocumentClient = {
 	}),
 
 	query: vi.fn().mockResolvedValue({
-		Items: [
-			{ id: 'item1', sortKey: 'sort1', data: 'Query result 1' }
-		],
+		Items: [{ id: 'item1', sortKey: 'sort1', data: 'Query result 1' }],
 		Count: 1
 	}),
 
@@ -144,6 +140,8 @@ export const mockDocumentClient = {
 
 /**
  * Factory para crear mocks de comandos específicos
+ * @param {string} commandName
+ * @param {any} response
  */
 export function createCommandMock(commandName, response) {
 	return vi.fn().mockImplementation((command) => {
@@ -209,17 +207,20 @@ export const mockHelpers = {
 			Items: items
 		});
 		mockDocumentClient.scan.mockResolvedValue({
-			Items: items.map(item => {
-				// Convertir de formato DynamoDB a formato plano
-				const plain = {};
-				Object.keys(item).forEach(key => {
-					const value = item[key];
-					if (value.S) plain[key] = value.S;
-					else if (value.N) plain[key] = Number(value.N);
-					else if (value.BOOL !== undefined) plain[key] = value.BOOL;
-				});
-				return plain;
-			}),
+			Items: items.map(
+				(/** @type {Record<string, { S?: string; N?: string; BOOL?: boolean }>} */ item) => {
+					// Convertir de formato DynamoDB a formato plano
+					/** @type {Record<string, string | number | boolean>} */
+					const plain = {};
+					Object.keys(item).forEach((key) => {
+						const value = item[key];
+						if (value.S !== undefined) plain[key] = value.S;
+						else if (value.N !== undefined) plain[key] = Number(value.N);
+						else if (value.BOOL !== undefined) plain[key] = value.BOOL;
+					});
+					return plain;
+				}
+			),
 			Count: items.length
 		});
 	},
@@ -237,7 +238,7 @@ export const mockHelpers = {
 	 */
 	reset: () => {
 		vi.clearAllMocks();
-		Object.values(mockDocumentClient).forEach(mock => {
+		Object.values(mockDocumentClient).forEach((mock) => {
 			if (typeof mock === 'function') {
 				mock.mockClear();
 			}

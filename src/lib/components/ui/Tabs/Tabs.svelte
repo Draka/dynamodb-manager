@@ -4,6 +4,7 @@
 -->
 <script>
 	import { X, Grid3X3, Plus } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 	/**
 	 * @typedef {Object} Tab
 	 * @property {string} id - Identificador único
@@ -62,7 +63,10 @@
 
 <div class="flex h-full flex-col">
 	<!-- Barra de pestañas -->
-	<div class="flex min-h-[40px] items-center border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+	<div
+		role="tablist"
+		class="flex min-h-[40px] items-center border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+	>
 		<div class="flex flex-1 items-center overflow-x-auto">
 			{#each tabs as tab (tab.id)}
 				<div
@@ -72,8 +76,9 @@
 						: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'}"
 					onclick={() => handleTabClick(tab.id)}
 					title={tab.title}
-					role="button"
-					tabindex="0"
+					role="tab"
+					aria-selected={activeTab === tab.id}
+					tabindex={activeTab === tab.id ? 0 : -1}
 					onkeydown={(e) => {
 						if (e.key === 'Enter' || e.key === ' ') {
 							handleTabClick(tab.id);
@@ -90,10 +95,10 @@
 						<button
 							class="ml-1 rounded p-0.5 opacity-60 transition-opacity group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-600"
 							onclick={(e) => handleTabClose(e, tab.id)}
-							title="Cerrar pestaña"
+							title={m['tabs.closeTabTitle']()}
 						>
 							<X size={12} />
-							<span class="sr-only">Cerrar pestaña</span>
+							<span class="sr-only">{m['tabs.closeTabTitle']()}</span>
 						</button>
 					{/if}
 				</div>
@@ -114,7 +119,7 @@
 	</div>
 
 	<!-- Contenido de la pestaña activa -->
-	<div class="flex-1 overflow-hidden bg-white dark:bg-gray-900">
+	<div role="tabpanel" class="flex-1 overflow-hidden bg-white dark:bg-gray-900">
 		{#if children}
 			{@render children()}
 		{/if}

@@ -25,7 +25,7 @@ describe('Theme Store', () => {
 		vi.clearAllMocks();
 
 		// Reset matchMedia mock
-		window.matchMedia = vi.fn().mockImplementation(query => ({
+		window.matchMedia = vi.fn().mockImplementation((query) => ({
 			matches: query.includes('dark') ? false : true,
 			media: query,
 			onchange: null,
@@ -33,7 +33,7 @@ describe('Theme Store', () => {
 			removeListener: vi.fn(),
 			addEventListener: vi.fn(),
 			removeEventListener: vi.fn(),
-			dispatchEvent: vi.fn(),
+			dispatchEvent: vi.fn()
 		}));
 	});
 
@@ -65,11 +65,11 @@ describe('Theme Store', () => {
 
 		it('should resolve system theme correctly', () => {
 			// Mock system prefers dark
-			window.matchMedia = vi.fn().mockImplementation(query => ({
+			window.matchMedia = vi.fn().mockImplementation((query) => ({
 				matches: query.includes('dark') ? true : false,
 				media: query,
 				addEventListener: vi.fn(),
-				removeEventListener: vi.fn(),
+				removeEventListener: vi.fn()
 			}));
 
 			setThemeMode(THEME_MODES.SYSTEM);
@@ -95,11 +95,11 @@ describe('Theme Store', () => {
 
 		it('should handle system theme correctly', () => {
 			// Mock system prefers light
-			window.matchMedia = vi.fn().mockImplementation(query => ({
+			window.matchMedia = vi.fn().mockImplementation((query) => ({
 				matches: query.includes('dark') ? false : true,
 				media: query,
 				addEventListener: vi.fn(),
-				removeEventListener: vi.fn(),
+				removeEventListener: vi.fn()
 			}));
 
 			setThemeMode(THEME_MODES.SYSTEM);

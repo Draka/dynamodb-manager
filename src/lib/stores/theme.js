@@ -46,9 +46,11 @@ function getSystemPrefersDark() {
  */
 function resolveTheme(themeMode) {
 	if (themeMode === THEME_MODES.SYSTEM) {
-		return getSystemPrefersDark() ? THEME_MODES.DARK : THEME_MODES.LIGHT;
+		return getSystemPrefersDark()
+			? /** @type {'light' | 'dark'} */ (THEME_MODES.DARK)
+			: /** @type {'light' | 'dark'} */ (THEME_MODES.LIGHT);
 	}
-	return themeMode;
+	return /** @type {'light' | 'dark'} */ (themeMode);
 }
 
 // Store reactivo del modo de tema
@@ -131,7 +133,9 @@ if (browser) {
 
 		// Solo actualizar si está en modo sistema
 		if (currentMode === THEME_MODES.SYSTEM) {
-			const newTheme = e.matches ? THEME_MODES.DARK : THEME_MODES.LIGHT;
+			const newTheme = /** @type {'light' | 'dark'} */ (
+				e.matches ? THEME_MODES.DARK : THEME_MODES.LIGHT
+			);
 			theme.set(newTheme);
 			applyThemeToDocument(newTheme);
 		}

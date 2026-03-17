@@ -35,11 +35,16 @@
 	/** Mapeo de variantes a clases CSS */
 	/** @type {Record<ButtonVariant, string>} */
 	const variantClasses = {
-		primary: 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white focus:ring-blue-500 dark:focus:ring-blue-400',
-		secondary: 'bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-800 text-white focus:ring-gray-500 dark:focus:ring-gray-400',
-		success: 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white focus:ring-green-500 dark:focus:ring-green-400',
-		danger: 'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white focus:ring-red-500 dark:focus:ring-red-400',
-		warning: 'bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800 text-white focus:ring-yellow-500 dark:focus:ring-yellow-400',
+		primary:
+			'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white focus:ring-blue-500 dark:focus:ring-blue-400',
+		secondary:
+			'bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-800 text-white focus:ring-gray-500 dark:focus:ring-gray-400',
+		success:
+			'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white focus:ring-green-500 dark:focus:ring-green-400',
+		danger:
+			'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white focus:ring-red-500 dark:focus:ring-red-400',
+		warning:
+			'bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800 text-white focus:ring-yellow-500 dark:focus:ring-yellow-400',
 		ghost:
 			'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 focus:ring-gray-500 dark:focus:ring-gray-400'
 	};

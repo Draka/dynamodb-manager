@@ -6,6 +6,7 @@
 	import { LoadingSpinner } from '../ui/LoadingSpinner';
 	import { dynamoDbApi } from '../../services/api-client.js';
 	import { AlertTriangle, Table, HardDrive, MapPin, List, Code } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let {
 		/** @type {string} Nombre de la tabla */
@@ -95,14 +96,14 @@
 	function getStatusColor(status) {
 		switch (status) {
 			case 'ACTIVE':
-				return 'text-green-600 bg-green-100';
+				return 'text-green-700 bg-green-100 dark:text-green-400 dark:bg-green-900/30';
 			case 'CREATING':
 			case 'UPDATING':
-				return 'text-yellow-600 bg-yellow-100';
+				return 'text-yellow-700 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/30';
 			case 'DELETING':
-				return 'text-red-600 bg-red-100';
+				return 'text-red-700 bg-red-100 dark:text-red-400 dark:bg-red-900/30';
 			default:
-				return 'text-gray-600 bg-gray-100';
+				return 'text-gray-700 bg-gray-100 dark:text-gray-400 dark:bg-gray-700';
 		}
 	}
 
@@ -134,17 +135,21 @@
 		<div class="flex h-full items-center justify-center">
 			<div class="text-center">
 				<LoadingSpinner size="lg" />
-				<p class="mt-2 text-sm text-gray-600">Cargando detalles de la tabla...</p>
+				<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+					Cargando detalles de la tabla...
+				</p>
 			</div>
 		</div>
 	{:else if error}
 		<div class="flex h-full items-center justify-center">
 			<div class="text-center">
-				<AlertTriangle size={48} class="mx-auto text-red-500" />
-				<h3 class="mt-2 text-lg font-medium text-gray-900">Error cargando detalles</h3>
-				<p class="mt-1 text-sm text-gray-600">{error}</p>
+				<AlertTriangle size={48} class="mx-auto text-red-500 dark:text-red-400" />
+				<h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">
+					Error cargando detalles
+				</h3>
+				<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{error}</p>
 				<button
-					class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+					class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
 					onclick={loadTableDetails}
 				>
 					Reintentar
@@ -156,11 +161,13 @@
 
 		<div class="space-y-6 p-6">
 			<!-- Header con nombre y estado -->
-			<div class="border-b border-gray-200 pb-4">
+			<div class="border-b border-gray-200 pb-4 dark:border-gray-700">
 				<div class="flex items-start justify-between">
 					<div>
-						<h1 class="text-2xl font-bold text-gray-900">{tableName}</h1>
-						<p class="mt-1 text-sm text-gray-600">Información detallada de la tabla DynamoDB</p>
+						<h1 class="text-2xl font-bold text-gray-900 dark:text-white">{tableName}</h1>
+						<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+							Información detallada de la tabla DynamoDB
+						</p>
 					</div>
 					<div class="flex items-center gap-2">
 						<span
@@ -176,39 +183,45 @@
 
 			<!-- Métricas principales -->
 			<div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
-				<div class="rounded-lg border border-gray-200 bg-white p-4">
+				<div
+					class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+				>
 					<div class="flex items-center gap-3">
-						<div class="rounded-lg bg-blue-100 p-2">
-							<Table size={20} class="text-blue-600" />
+						<div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+							<Table size={20} class="text-blue-600 dark:text-blue-400" />
 						</div>
 						<div>
-							<p class="text-sm font-medium text-gray-600">Items</p>
-							<p class="text-2xl font-semibold text-gray-900">
+							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Items</p>
+							<p class="text-2xl font-semibold text-gray-900 dark:text-white">
 								{formatItemCount(tableInfo.ItemCount || 0)}
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div class="rounded-lg border border-gray-200 bg-white p-4">
+				<div
+					class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+				>
 					<div class="flex items-center gap-3">
-						<div class="rounded-lg bg-green-100 p-2">
-							<HardDrive size={20} class="text-green-600" />
+						<div class="rounded-lg bg-green-100 p-2 dark:bg-green-900/30">
+							<HardDrive size={20} class="text-green-600 dark:text-green-400" />
 						</div>
 						<div>
-							<p class="text-sm font-medium text-gray-600">Tamaño</p>
-							<p class="text-2xl font-semibold text-gray-900">
+							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Tamaño</p>
+							<p class="text-2xl font-semibold text-gray-900 dark:text-white">
 								{formatSize(tableInfo.TableSizeBytes || 0)}
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div class="rounded-lg border border-gray-200 bg-white p-4">
+				<div
+					class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+				>
 					<div class="flex items-center gap-3">
-						<div class="rounded-lg bg-purple-100 p-2">
+						<div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
 							<svg
-								class="h-5 w-5 text-purple-600"
+								class="h-5 w-5 text-purple-600 dark:text-purple-400"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -222,8 +235,10 @@
 							</svg>
 						</div>
 						<div>
-							<p class="text-sm font-medium text-gray-600">Claves</p>
-							<p class="text-2xl font-semibold text-gray-900">{keys?.rangeKey ? '2' : '1'}</p>
+							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Claves</p>
+							<p class="text-2xl font-semibold text-gray-900 dark:text-white">
+								{keys?.rangeKey ? '2' : '1'}
+							</p>
 						</div>
 					</div>
 				</div>
@@ -231,25 +246,34 @@
 
 			<!-- Esquema de claves -->
 			{#if keys}
-				<div class="rounded-lg border border-gray-200 bg-white">
-					<div class="border-b border-gray-200 bg-gray-50 px-6 py-3">
-						<h2 class="text-lg font-medium text-gray-900">Esquema de Claves</h2>
+				<div
+					class="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+				>
+					<div
+						class="border-b border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-900"
+					>
+						<h2 class="text-lg font-medium text-gray-900 dark:text-white">Esquema de Claves</h2>
 					</div>
 					<div class="p-6">
 						<div class="space-y-4">
 							<!-- Clave primaria (Hash) -->
 							<div class="flex items-center gap-4">
 								<div class="flex items-center gap-2">
-									<div class="rounded-lg bg-red-100 p-2">
-										<MapPin size={16} class="text-red-600" />
+									<div class="rounded-lg bg-red-100 p-2 dark:bg-red-900/30">
+										<MapPin
+											size={16}
+											class="text-red-600 dark:text-red-400"
+											aria-label={m['tableDetails.primaryKeyIconAriaLabel']()}
+										/>
 									</div>
 									<div>
-										<p class="font-medium text-gray-900">Clave Primaria (Hash)</p>
-										<p class="text-sm text-gray-600">Clave de partición</p>
+										<p class="font-medium text-gray-900 dark:text-white">Clave Primaria (Hash)</p>
+										<p class="text-sm text-gray-600 dark:text-gray-400">Clave de partición</p>
 									</div>
 								</div>
 								<div class="flex-1">
-									<code class="rounded-md bg-gray-100 px-2 py-1 font-mono text-sm"
+									<code
+										class="rounded-md bg-gray-100 px-2 py-1 font-mono text-sm dark:bg-gray-700 dark:text-gray-300"
 										>{keys.hashKey}</code
 									>
 								</div>
@@ -259,16 +283,19 @@
 							{#if keys.rangeKey}
 								<div class="flex items-center gap-4">
 									<div class="flex items-center gap-2">
-										<div class="rounded-lg bg-blue-100 p-2">
-											<List size={16} class="text-blue-600" />
+										<div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+											<List size={16} class="text-blue-600 dark:text-blue-400" />
 										</div>
 										<div>
-											<p class="font-medium text-gray-900">Clave de Ordenación (Range)</p>
-											<p class="text-sm text-gray-600">Clave de ordenación</p>
+											<p class="font-medium text-gray-900 dark:text-white">
+												Clave de Ordenación (Range)
+											</p>
+											<p class="text-sm text-gray-600 dark:text-gray-400">Clave de ordenación</p>
 										</div>
 									</div>
 									<div class="flex-1">
-										<code class="rounded-md bg-gray-100 px-2 py-1 font-mono text-sm"
+										<code
+											class="rounded-md bg-gray-100 px-2 py-1 font-mono text-sm dark:bg-gray-700 dark:text-gray-300"
 											>{keys.rangeKey}</code
 										>
 									</div>
@@ -281,43 +308,53 @@
 
 			<!-- Atributos -->
 			{#if tableInfo.AttributeDefinitions}
-				<div class="rounded-lg border border-gray-200 bg-white">
-					<div class="border-b border-gray-200 bg-gray-50 px-6 py-3">
-						<h2 class="text-lg font-medium text-gray-900">Definiciones de Atributos</h2>
+				<div
+					class="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+				>
+					<div
+						class="border-b border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-900"
+					>
+						<h2 class="text-lg font-medium text-gray-900 dark:text-white">
+							Definiciones de Atributos
+						</h2>
 					</div>
 					<div class="p-0">
 						<div class="overflow-x-auto">
-							<table class="min-w-full divide-y divide-gray-200">
-								<thead class="bg-gray-50">
+							<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+								<thead class="bg-gray-50 dark:bg-gray-900">
 									<tr>
 										<th
-											class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400"
 											>Nombre</th
 										>
 										<th
-											class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400"
 											>Tipo</th
 										>
 										<th
-											class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400"
 											>Uso</th
 										>
 									</tr>
 								</thead>
-								<tbody class="divide-y divide-gray-200 bg-white">
-									{#each tableInfo.AttributeDefinitions as attr}
+								<tbody
+									class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800"
+								>
+									{#each tableInfo.AttributeDefinitions as attr (attr.AttributeName)}
 										<tr>
 											<td class="px-6 py-4 whitespace-nowrap">
-												<code class="font-mono text-sm">{attr.AttributeName}</code>
+												<code class="font-mono text-sm dark:text-gray-300"
+													>{attr.AttributeName}</code
+												>
 											</td>
 											<td class="px-6 py-4 whitespace-nowrap">
 												<span
 													class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {attr.AttributeType ===
 													'S'
-														? 'bg-green-100 text-green-800'
+														? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
 														: attr.AttributeType === 'N'
-															? 'bg-blue-100 text-blue-800'
-															: 'bg-gray-100 text-gray-800'}"
+															? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+															: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}"
 												>
 													{attr.AttributeType === 'S'
 														? 'String'
@@ -328,21 +365,23 @@
 																: attr.AttributeType}
 												</span>
 											</td>
-											<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
+											<td
+												class="px-6 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400"
+											>
 												{#if keys?.hashKey === attr.AttributeName}
 													<span
-														class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
+														class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400"
 													>
 														Clave Primaria
 													</span>
 												{:else if keys?.rangeKey === attr.AttributeName}
 													<span
-														class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
+														class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
 													>
 														Clave Ordenación
 													</span>
 												{:else}
-													<span class="text-gray-400">Índice</span>
+													<span class="text-gray-400 dark:text-gray-500">Índice</span>
 												{/if}
 											</td>
 										</tr>
@@ -355,29 +394,39 @@
 			{/if}
 
 			<!-- Información general -->
-			<div class="rounded-lg border border-gray-200 bg-white">
-				<div class="border-b border-gray-200 bg-gray-50 px-6 py-3">
-					<h2 class="text-lg font-medium text-gray-900">Información General</h2>
+			<div class="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+				<div
+					class="border-b border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-900"
+				>
+					<h2 class="text-lg font-medium text-gray-900 dark:text-white">Información General</h2>
 				</div>
 				<div class="p-6">
 					<dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
-							<dt class="text-sm font-medium text-gray-500">ARN de la tabla</dt>
-							<dd class="mt-1 font-mono text-sm break-all text-gray-900">{tableInfo.TableArn}</dd>
+							<dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ARN de la tabla</dt>
+							<dd class="mt-1 font-mono text-sm break-all text-gray-900 dark:text-gray-300">
+								{tableInfo.TableArn}
+							</dd>
 						</div>
 						<div>
-							<dt class="text-sm font-medium text-gray-500">Fecha de creación</dt>
-							<dd class="mt-1 text-sm text-gray-900">{formatDate(tableInfo.CreationDateTime)}</dd>
+							<dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+								Fecha de creación
+							</dt>
+							<dd class="mt-1 text-sm text-gray-900 dark:text-white">
+								{formatDate(tableInfo.CreationDateTime)}
+							</dd>
 						</div>
 						<div>
-							<dt class="text-sm font-medium text-gray-500">Clase de tabla</dt>
-							<dd class="mt-1 text-sm text-gray-900">
+							<dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Clase de tabla</dt>
+							<dd class="mt-1 text-sm text-gray-900 dark:text-white">
 								{tableInfo.TableClassSummary?.TableClass || 'STANDARD'}
 							</dd>
 						</div>
 						<div>
-							<dt class="text-sm font-medium text-gray-500">Modo de facturación</dt>
-							<dd class="mt-1 text-sm text-gray-900">
+							<dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+								Modo de facturación
+							</dt>
+							<dd class="mt-1 text-sm text-gray-900 dark:text-white">
 								{tableInfo.BillingModeSummary?.BillingMode || 'PROVISIONED'}
 							</dd>
 						</div>
@@ -388,8 +437,10 @@
 	{:else}
 		<div class="flex h-full items-center justify-center">
 			<div class="text-center">
-				<Code size={48} class="mx-auto text-gray-400" />
-				<p class="mt-2 text-sm text-gray-500">Selecciona una tabla para ver sus detalles</p>
+				<Code size={48} class="mx-auto text-gray-400 dark:text-gray-600" />
+				<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+					Selecciona una tabla para ver sus detalles
+				</p>
 			</div>
 		</div>
 	{/if}

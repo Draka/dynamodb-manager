@@ -4,9 +4,9 @@
 -->
 <script>
 	import { Button } from '../ui/Button';
-	import { LoadingSpinner } from '../ui/LoadingSpinner';
 	import { dynamoDbApi } from '../../services/api-client.js';
 	import { X, CircleCheckBig, AlignLeft, Code } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let {
 		/** @type {Object} Registro a editar */
@@ -59,7 +59,7 @@
 				jsonText = JSON.stringify(parsed, null, 2);
 				validateJson();
 			}
-		} catch (error) {
+		} catch {
 			// El formato fallará si el JSON es inválido, mantener texto actual
 		}
 	}
@@ -170,7 +170,7 @@
 <!-- Overlay del modal -->
 {#if isOpen}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70"
+		class="bg-opacity-50 dark:bg-opacity-70 fixed inset-0 z-50 flex items-center justify-center bg-black dark:bg-black"
 		onclick={handleClose}
 		onkeydown={(e) => {
 			if (e.key === 'Escape') {
@@ -179,32 +179,41 @@
 		}}
 		role="button"
 		tabindex="0"
-		aria-label="Cerrar modal"
+		aria-label={m['modal.closeAriaLabel']()}
 	>
 		<!-- Panel del editor -->
 		<div
-			class="flex h-full w-full max-w-4xl flex-col bg-white dark:bg-gray-800 shadow-xl"
+			class="flex h-full w-full max-w-4xl flex-col bg-white shadow-xl dark:bg-gray-800"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.stopPropagation()}
 			role="button"
 			tabindex="0"
 		>
 			<!-- Header -->
-			<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+			<div
+				class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700"
+			>
 				<div>
-					<h2 class="text-lg font-medium text-gray-900 dark:text-white">Editar Registro</h2>
-					<p class="text-sm text-gray-600 dark:text-gray-300">Tabla: {tableName}</p>
+					<h2 class="text-lg font-medium text-gray-900 dark:text-white">
+						{m['recordEditorAdvanced.title']()}
+					</h2>
+					<p class="text-sm text-gray-600 dark:text-gray-300">
+						{m['recordEditorAdvanced.tableLabel']()}
+						{tableName}
+					</p>
 				</div>
 				<div class="flex items-center gap-2">
 					{#if hasChanges}
-						<span class="rounded-full bg-yellow-100 dark:bg-yellow-900/20 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-400">
+						<span
+							class="rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+						>
 							Cambios sin guardar
 						</span>
 					{/if}
 					<button
-						class="rounded-md p-2 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
+						class="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
 						onclick={handleClose}
-						title="Cerrar"
+						title={m['button.close']()}
 					>
 						<X size={20} />
 					</button>
@@ -214,10 +223,12 @@
 			<!-- Contenido -->
 			<div class="flex flex-1 flex-col overflow-hidden">
 				<!-- Toolbar -->
-				<div class="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-3">
+				<div
+					class="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-800"
+				>
 					<Button size="sm" variant="secondary" onclick={formatJson} disabled={!jsonText.trim()}>
 						<AlignLeft size={16} class="mr-2" />
-						Formatear JSON
+						{m['jsonEditor.formatJson']()}
 					</Button>
 
 					{#if validationError}
@@ -238,7 +249,7 @@
 					<textarea
 						bind:value={jsonText}
 						oninput={checkForChanges}
-						class="h-full w-full resize-none border-none bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 font-mono text-sm leading-relaxed focus:outline-none focus:ring-0"
+						class="h-full w-full resize-none border-none bg-gray-50 p-6 font-mono text-sm leading-relaxed text-gray-900 focus:ring-0 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
 						placeholder="Ingresa el JSON del registro..."
 						spellcheck="false"
 					></textarea>
@@ -246,11 +257,15 @@
 
 				<!-- Mensaje de error -->
 				{#if validationError}
-					<div class="border-t border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-6 py-3">
+					<div
+						class="border-t border-red-200 bg-red-50 px-6 py-3 dark:border-red-800 dark:bg-red-900/20"
+					>
 						<div class="flex items-start gap-2">
 							<Code size={16} class="mt-0.5 text-red-500 dark:text-red-400" />
 							<div>
-								<p class="text-sm font-medium text-red-800 dark:text-red-300">Error de validación</p>
+								<p class="text-sm font-medium text-red-800 dark:text-red-300">
+									{m['errors.validation']()}
+								</p>
 								<p class="text-sm text-red-700 dark:text-red-400">{validationError}</p>
 							</div>
 						</div>
@@ -260,7 +275,7 @@
 
 			<!-- Footer con botones -->
 			<div
-				class="flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4"
+				class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800"
 			>
 				<Button variant="secondary" onclick={handleClose} disabled={saving}>Cancelar</Button>
 				<Button

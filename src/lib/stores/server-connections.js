@@ -81,4 +81,32 @@ export function cleanupOldConnections() {
 }
 
 // Limpiar conexiones antiguas cada 30 minutos
-setInterval(cleanupOldConnections, 30 * 60 * 1000);
+// Proteger contra intervalos duplicados en hot reload
+/** @type {ReturnType<typeof setInterval> | undefined} */
+let cleanupIntervalId = undefined;
+const existingCleanup =
+	typeof globalThis !== 'undefined'
+		? /** @type {ReturnType<typeof setInterval> | undefined} */ (
+				/** @type {any} */ (globalThis).__cleanupIntervalId
+			)
+		: undefined;
+if (existingCleanup) {
+	clearInterval(existingCleanup);
+}
+cleanupIntervalId = setInterval(cleanupOldConnections, 30 * 60 * 1000);
+if (typeof globalThis !== 'undefined') {
+	/** @type {any} */ (globalThis).__cleanupIntervalId = cleanupIntervalId;
+}
+
+/**
+ * Detiene el intervalo de limpieza (para tests o shutdown)
+ */
+export function stopCleanupInterval() {
+	if (cleanupIntervalId) {
+		clearInterval(cleanupIntervalId);
+		cleanupIntervalId = undefined;
+		if (typeof globalThis !== 'undefined') {
+			/** @type {any} */ (globalThis).__cleanupIntervalId = undefined;
+		}
+	}
+}

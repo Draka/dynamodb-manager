@@ -56,7 +56,8 @@
 		{#if collapsible}
 			<button
 				type="button"
-				class="w-full cursor-pointer border-b border-gray-200 dark:border-gray-700 px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+				aria-expanded={!collapsed}
+				class="w-full cursor-pointer border-b border-gray-200 px-6 py-4 text-left hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
 				onclick={toggleCollapse}
 			>
 				<div class="flex items-center justify-between">
@@ -77,14 +78,14 @@
 
 					<ChevronDown
 						size={20}
-						class="transform transition-transform duration-200 text-gray-400 dark:text-gray-500 {collapsed
+						class="transform text-gray-400 transition-transform duration-200 dark:text-gray-500 {collapsed
 							? 'rotate-0'
 							: 'rotate-180'}"
 					/>
 				</div>
 			</button>
 		{:else}
-			<div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+			<div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
 				<div>
 					{#if header}
 						{@render header()}
@@ -112,7 +113,9 @@
 
 	<!-- Footer -->
 	{#if footer && !collapsed}
-		<div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4">
+		<div
+			class="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800"
+		>
 			{@render footer()}
 		</div>
 	{/if}

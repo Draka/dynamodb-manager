@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	selectFile: (options) => {
 		return ipcRenderer.invoke('dialog-open-file', options);
 	},
-	
+
 	saveFile: (options) => {
 		return ipcRenderer.invoke('dialog-save-file', options);
 	}

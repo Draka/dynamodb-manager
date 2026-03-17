@@ -3,15 +3,16 @@
  * Maneja la vista tabla y JSON con paginación
 -->
 <script>
+	import { untrack } from 'svelte';
 	import { Button } from '../ui/Button';
 	import { LoadingSpinner } from '../ui/LoadingSpinner';
 	import { Select } from '../ui/Select';
 	import { TextInput } from '../ui/Input';
 	import { isConnected } from '../../stores/current-connection.js';
 	import { dynamoDbApi } from '../../services/api-client.js';
+	import { debounce } from '../../utils/debounce.js';
 	import TableView from './TableView.svelte';
 	import JsonView from './JsonView.svelte';
-	import RecordEditor from './RecordEditor.svelte';
 	import DynamoDBRecordEditor from './DynamoDBRecordEditor.svelte';
 	import {
 		RefreshCw,
@@ -42,7 +43,8 @@
 	let error = $state(/** @type {string | null} */ (null));
 	let viewMode = $state(/** @type {'table' | 'json'} */ ('table'));
 	let currentPage = $state(1);
-	let itemsPerPage = $state(25);
+	let itemsPerPageStr = $state('25');
+	let itemsPerPage = $derived(parseInt(itemsPerPageStr, 10) || 25);
 	let totalItems = $state(0);
 	let lastEvaluatedKey = $state(/** @type {Object | null} */ (null));
 	let nextPageKeys = $state(/** @type {Array<Object | null>} */ ([])); // Stack para navegación
@@ -59,27 +61,46 @@
 	/** Información del esquema de la tabla */
 	let tableSchema = $state(/** @type {any} */ (null));
 
-	/** Opciones de items por página */
+	/** Opciones de items por página (value string para Select) */
 	const itemsPerPageOptions = [
-		{ value: 10, label: '10 items' },
-		{ value: 25, label: '25 items' },
-		{ value: 50, label: '50 items' },
-		{ value: 100, label: '100 items' }
+		{ value: '10', label: '10 items' },
+		{ value: '25', label: '25 items' },
+		{ value: '50', label: '50 items' },
+		{ value: '100', label: '100 items' }
 	];
 
 	/** Filtros de búsqueda */
 	let searchTerm = $state('');
 	let searchField = $state('');
+	let searchOperator = $state('contains');
+
+	/** Operadores de búsqueda disponibles */
+	const searchOperators = [
+		{ value: 'contains', label: 'Contiene' },
+		{ value: 'begins_with', label: 'Comienza con' },
+		{ value: '=', label: 'Igual a' },
+		{ value: '<>', label: 'Diferente de' },
+		{ value: '>', label: 'Mayor que' },
+		{ value: '<', label: 'Menor que' },
+		{ value: '>=', label: 'Mayor o igual' },
+		{ value: '<=', label: 'Menor o igual' }
+	];
 
 	/**
 	 * Realiza un scan de la tabla usando API client
 	 * @param {Object | null} startKey - Clave para continuar paginación
 	 * @param {boolean} isNextPage - Si es navegación a página siguiente
+	 * @param {number} [limitOverride] - Límite explícito (evita dependencia reactiva)
 	 */
-	async function scanTable(startKey = null, isNextPage = false) {
+	async function scanTable(startKey = null, isNextPage = false, limitOverride = undefined) {
 		if (!$isConnected || !tableName) {
 			return;
 		}
+
+		// Leer itemsPerPage con untrack para evitar que el $effect de carga inicial
+		// se suscriba a cambios de itemsPerPage (el $effect de previousItemsPerPage
+		// es el único responsable de reaccionar a cambios de items por página).
+		const limit = limitOverride ?? untrack(() => itemsPerPage);
 
 		loading = true;
 		error = null;
@@ -87,15 +108,24 @@
 		try {
 			/** @type {any} */
 			const params = {
-				limit: itemsPerPage,
+				limit,
 				...(startKey && { lastEvaluatedKey: startKey })
 			};
 
 			// Agregar filtro si hay búsqueda
-			if (searchTerm && searchField) {
-				params.filterExpression = `contains(#field, :searchTerm)`;
+			if (searchTerm && searchField && searchOperator) {
 				params.expressionAttributeNames = { '#field': searchField };
 				params.expressionAttributeValues = { ':searchTerm': searchTerm };
+
+				// Construir expresión según el operador
+				if (searchOperator === 'contains') {
+					params.filterExpression = `contains(#field, :searchTerm)`;
+				} else if (searchOperator === 'begins_with') {
+					params.filterExpression = `begins_with(#field, :searchTerm)`;
+				} else {
+					// Operadores de comparación (=, <>, <, >, <=, >=)
+					params.filterExpression = `#field ${searchOperator} :searchTerm`;
+				}
 			}
 
 			const response = await dynamoDbApi.scanTable(tableName, params);
@@ -128,8 +158,9 @@
 	async function goToNextPage() {
 		if (!lastEvaluatedKey) return;
 
+		const limit = itemsPerPage; // capturar en el momento del click
 		currentPage++;
-		await scanTable(lastEvaluatedKey, true);
+		await scanTable(lastEvaluatedKey, true, limit);
 	}
 
 	/**
@@ -138,11 +169,12 @@
 	async function goToPreviousPage() {
 		if (currentPage <= 1) return;
 
+		const limit = itemsPerPage; // capturar en el momento del click
 		currentPage--;
 		nextPageKeys.pop(); // Remover la última clave
 
 		const previousKey = nextPageKeys[nextPageKeys.length - 1] || null;
-		await scanTable(previousKey, false);
+		await scanTable(previousKey, false, limit);
 	}
 
 	/**
@@ -156,10 +188,8 @@
 
 	/**
 	 * Cambia el número de items por página
-	 * @param {any} event - Evento de cambio
 	 */
-	async function handleItemsPerPageChange(event) {
-		itemsPerPage = parseInt(event.target.value);
+	async function handleItemsPerPageChange() {
 		currentPage = 1;
 		nextPageKeys = [];
 		await scanTable();
@@ -173,6 +203,37 @@
 		nextPageKeys = [];
 		await scanTable();
 	}
+
+	/**
+	 * Versión debounced de handleSearch para búsqueda automática
+	 */
+	const debouncedSearch = debounce(handleSearch, 500);
+
+	/**
+	 * Auto-búsqueda con debounce cuando cambia el término de búsqueda
+	 */
+	$effect(() => {
+		// Solo ejecutar si hay término de búsqueda y campo seleccionado
+		if (searchTerm && searchField) {
+			debouncedSearch();
+		}
+	});
+
+	/**
+	 * Reaccionar a cambios en items por página.
+	 * _itemsPerPageMounted es un let normal (no $state) para no crear dependencias reactivas.
+	 */
+	let _itemsPerPageMounted = false;
+	$effect(() => {
+		itemsPerPage; // suscripción reactiva SOLO a itemsPerPage
+		if (!_itemsPerPageMounted) {
+			_itemsPerPageMounted = true; // plain let, no reactivo
+			return;
+		}
+		if (untrack(() => tableName && $isConnected)) {
+			handleItemsPerPageChange();
+		}
+	});
 
 	/**
 	 * Limpia la búsqueda
@@ -269,13 +330,14 @@
 						const arr = /** @type {any[]} */ (obj.L);
 						return arr.map((x) => normalizeToPlain(x));
 					}
-				case 'M':
+				case 'M': {
 					/** @type {any} */
 					const out = {};
 					for (const key of Object.keys(obj.M || {})) {
 						out[key] = normalizeToPlain(obj.M[key]);
 					}
 					return out;
+				}
 			}
 		}
 
@@ -420,7 +482,7 @@
 				);
 
 				if (recordIndex !== -1) {
-					records[recordIndex] = updatedRecord;
+					records[recordIndex] = /** @type {Record} */ (updatedRecord);
 				}
 			} else {
 				console.error('Error actualizando campo:', response.error);
@@ -522,28 +584,28 @@
 	<div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
 		<div>
 			<h3 class="text-lg font-medium text-gray-900 dark:text-white">
-				{m["recordViewer.dataFrom"]({ tableName })}
+				{m['recordViewer.dataFrom']({ tableName })}
 			</h3>
 			<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-				{m["recordViewer.recordsFound"]({ count: totalItems })}
+				{m['recordViewer.recordsFound']({ count: totalItems })}
 			</p>
 		</div>
 
 		<div class="flex items-center gap-3">
 			<!-- Toggle vista -->
-			<div class="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+			<div class="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700">
 				<button
 					class="rounded-md px-3 py-1 text-sm transition-colors {viewMode === 'table'
-						? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-						: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
+						? 'bg-white text-gray-900 shadow-sm dark:bg-gray-600 dark:text-white'
+						: 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'}"
 					onclick={() => (viewMode = 'table')}
 				>
 					Tabla
 				</button>
 				<button
 					class="rounded-md px-3 py-1 text-sm transition-colors {viewMode === 'json'
-						? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-						: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
+						? 'bg-white text-gray-900 shadow-sm dark:bg-gray-600 dark:text-white'
+						: 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'}"
 					onclick={() => (viewMode = 'json')}
 				>
 					JSON
@@ -565,16 +627,42 @@
 	</div>
 
 	<!-- Filtros de búsqueda -->
-	<div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
-		<div class="flex flex-col gap-4 sm:flex-row">
+	<div
+		class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
+	>
+		<div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+			<!-- Campo -->
 			<div class="flex-1">
-				<TextInput bind:value={searchTerm} placeholder={m["recordViewer.search"]()} />
+				<Select
+					id="recordviewer-search-field"
+					label="Campo"
+					bind:value={searchField}
+					options={availableFields}
+					placeholder={m['recordViewer.searchField']()}
+				/>
 			</div>
 
-			<div class="sm:w-48">
-				<Select bind:value={searchField} options={availableFields} placeholder={m["recordViewer.searchField"]()} />
+			<!-- Operador -->
+			<div class="sm:w-40">
+				<Select
+					id="recordviewer-search-operator"
+					label="Operador"
+					bind:value={searchOperator}
+					options={searchOperators}
+				/>
 			</div>
 
+			<!-- Valor -->
+			<div class="flex-1">
+				<TextInput
+					id="recordviewer-search-value"
+					label="Valor"
+					bind:value={searchTerm}
+					placeholder={m['recordViewer.search']()}
+				/>
+			</div>
+
+			<!-- Botones -->
 			<div class="flex gap-2">
 				<Button
 					variant="primary"
@@ -585,7 +673,9 @@
 					Buscar
 				</Button>
 
-				<Button variant="ghost" size="sm" onclick={clearSearch} disabled={loading}>{m["recordViewer.clear"]()}</Button>
+				<Button variant="ghost" size="sm" onclick={clearSearch} disabled={loading}
+					>{m['recordViewer.clear']()}</Button
+				>
 			</div>
 		</div>
 	</div>
@@ -593,25 +683,27 @@
 	<!-- Estados de carga y error -->
 	{#if loading}
 		<div class="py-12 text-center">
-			<LoadingSpinner size="lg" text={m["recordViewer.loading"]()} center />
+			<LoadingSpinner size="lg" text={m['recordViewer.loading']()} center />
 		</div>
 	{:else if error}
 		<div class="py-12 text-center">
 			<AlertTriangle size={48} class="mx-auto text-red-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["recordViewer.errorLoading"]()}</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+				{m['recordViewer.errorLoading']()}
+			</h3>
 			<p class="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
 			<div class="mt-6">
-				<Button variant="primary" onclick={refreshData}>{m["button.retry"]()}</Button>
+				<Button variant="primary" onclick={refreshData}>{m['button.retry']()}</Button>
 			</div>
 		</div>
 	{:else if records.length === 0}
 		<div class="py-12 text-center">
 			<Archive size={48} class="mx-auto text-gray-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["recordViewer.noRecords"]()}</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+				{m['recordViewer.noRecords']()}
+			</h3>
 			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-				{searchTerm
-					? m["recordViewer.noRecordsFound"]()
-					: m["recordViewer.emptyTable"]()}
+				{searchTerm ? m['recordViewer.noRecordsFound']() : m['recordViewer.emptyTable']()}
 			</p>
 		</div>
 	{:else}
@@ -633,16 +725,14 @@
 
 	<!-- Paginación y controles -->
 	{#if records.length > 0 && !loading}
-		<div class="flex flex-col items-center justify-between gap-4 border-t border-gray-200 dark:border-gray-700 pt-4 sm:flex-row">
+		<div
+			class="flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-4 sm:flex-row dark:border-gray-700"
+		>
 			<div class="flex items-center gap-4">
 				<span class="text-sm text-gray-700 dark:text-gray-300">
-					{m["recordViewer.page"]({ page: currentPage })}
+					{m['recordViewer.page']({ page: currentPage })}
 				</span>
-				<Select
-					value={itemsPerPage.toString()}
-					options={itemsPerPageOptions}
-					onchange={handleItemsPerPageChange}
-				/>
+				<Select bind:value={itemsPerPageStr} options={itemsPerPageOptions} />
 			</div>
 
 			<div class="flex items-center gap-2">
@@ -657,7 +747,7 @@
 				</Button>
 
 				<Button variant="secondary" size="sm" onclick={goToNextPage} disabled={!lastEvaluatedKey}>
-					{m["recordViewer.next"]()}
+					{m['recordViewer.next']()}
 					<ChevronRight size={16} class="ml-2" />
 				</Button>
 			</div>
@@ -678,7 +768,7 @@
 <!-- Modal de confirmación de eliminación -->
 {#if deleteConfirmOpen}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70"
+		class="bg-opacity-50 dark:bg-opacity-70 fixed inset-0 z-50 flex items-center justify-center bg-black dark:bg-black"
 		onclick={handleDeleteCancel}
 		onkeydown={(e) => {
 			if (e.key === 'Enter' || e.key === ' ') {
@@ -688,10 +778,10 @@
 		}}
 		role="button"
 		tabindex="0"
-		aria-label={m["recordEditor.closeModalAriaLabel"]()}
+		aria-label={m['recordEditor.closeModalAriaLabel']()}
 	>
 		<div
-			class="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl"
+			class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => {
 				if (e.key === 'Enter' || e.key === ' ') {
@@ -701,7 +791,7 @@
 			}}
 			role="button"
 			tabindex="0"
-			aria-label={m["recordEditor.modalContentAriaLabel"]()}
+			aria-label={m['recordEditor.modalContentAriaLabel']()}
 		>
 			<!-- Header -->
 			<div class="mb-4 flex items-center gap-3">
@@ -709,19 +799,23 @@
 					<AlertTriangle size={24} class="text-red-600" />
 				</div>
 				<div class="flex-1">
-					<h3 class="text-lg font-medium text-gray-900 dark:text-white">{m["recordEditor.confirmDeletion"]()}</h3>
-					<p class="text-sm text-gray-600 dark:text-gray-300">{m["recordEditor.cannotUndo"]()}</p>
+					<h3 class="text-lg font-medium text-gray-900 dark:text-white">
+						{m['recordEditor.confirmDeletion']()}
+					</h3>
+					<p class="text-sm text-gray-600 dark:text-gray-300">{m['recordEditor.cannotUndo']()}</p>
 				</div>
 			</div>
 
 			<!-- Contenido -->
 			<div class="mb-6">
 				<p class="mb-2 text-sm text-gray-700 dark:text-gray-300">
-					{m["recordEditor.confirmDeleteQuestion"]()}
+					{m['recordEditor.confirmDeleteQuestion']()}
 				</p>
-				<div class="rounded-md bg-gray-50 dark:bg-gray-700 p-3">
+				<div class="rounded-md bg-gray-50 p-3 dark:bg-gray-700">
 					{#if deletingRecord}
-						<div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">{m["recordEditor.primaryKey"]()}</div>
+						<div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+							{m['recordEditor.primaryKey']()}
+						</div>
 						<div class="font-mono text-sm text-gray-900 dark:text-gray-100">
 							{getPrimaryKeyDescription(deletingRecord)}
 						</div>
@@ -733,7 +827,7 @@
 			<div class="flex items-center justify-end gap-3">
 				<button
 					type="button"
-					class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+					class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
 					onclick={handleDeleteCancel}
 					disabled={deleting}
 				>
@@ -741,13 +835,13 @@
 				</button>
 				<button
 					type="button"
-					class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					onclick={handleDeleteConfirm}
 					disabled={deleting}
 				>
 					{#if deleting}
 						<Loader class="mr-2 animate-spin" />
-						{m["recordEditor.deleting"]()}
+						{m['recordEditor.deleting']()}
 					{:else}
 						Eliminar
 					{/if}

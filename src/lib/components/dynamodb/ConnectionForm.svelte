@@ -40,13 +40,14 @@
 	});
 
 	/** Errores de validación */
+	/** @type {{ name: string | null; region: string | null; endpoint: string | null; accessKeyId: string | null; secretAccessKey: string | null; general: string | null }} */
 	let errors = $state({
-		name: null,
-		region: null,
-		endpoint: null,
-		accessKeyId: null,
-		secretAccessKey: null,
-		general: null
+		name: /** @type {string | null} */ (null),
+		region: /** @type {string | null} */ (null),
+		endpoint: /** @type {string | null} */ (null),
+		accessKeyId: /** @type {string | null} */ (null),
+		secretAccessKey: /** @type {string | null} */ (null),
+		general: /** @type {string | null} */ (null)
 	});
 
 	/** Estados del componente */
@@ -184,9 +185,9 @@
 				testResult = 'error';
 				testMessage = response.error || 'No se pudo conectar. Verifica las credenciales.';
 			}
-		} catch (error) {
+		} catch (/** @type {unknown} */ error) {
 			testResult = 'error';
-			testMessage = `Error de conexión: ${error.message}`;
+			testMessage = `Error de conexión: ${error instanceof Error ? error.message : String(error)}`;
 			console.error('Error probando conexión:', error);
 		} finally {
 			isTesting = false;
@@ -231,8 +232,8 @@
 			}
 
 			onsaved?.();
-		} catch (error) {
-			errors.general = `Error guardando conexión: ${error.message}`;
+		} catch (/** @type {unknown} */ error) {
+			errors.general = `Error guardando conexión: ${error instanceof Error ? error.message : String(error)}`;
 			console.error('Error guardando conexión:', error);
 		} finally {
 			isSaving = false;
@@ -274,7 +275,9 @@
 
 	<!-- Error general -->
 	{#if errors.general}
-		<div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+		<div
+			class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
+		>
 			<div class="flex items-center gap-2">
 				<Code size={20} class="text-red-500 dark:text-red-400" />
 				<span class="text-sm text-red-700 dark:text-red-300">{errors.general}</span>

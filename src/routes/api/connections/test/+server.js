@@ -34,23 +34,25 @@ export async function POST({ request }) {
 		await service.close();
 
 		return json({ success: true, message: 'Conexión exitosa!' });
-	} catch (error) {
+	} catch (/** @type {unknown} */ error) {
 		console.error('Error probando conexión:', error);
 
 		let errorMessage = 'Error de conexión desconocido';
+		/** @type {{ name?: string; code?: string; message?: string }} */
+		const err = error && typeof error === 'object' ? error : {};
 
-		if (error.name === 'NetworkingError' || error.code === 'NetworkingError') {
+		if (err.name === 'NetworkingError' || err.code === 'NetworkingError') {
 			errorMessage =
 				'No se puede conectar al endpoint. Verifica la URL y que el servicio esté ejecutándose.';
 		} else if (
-			error.name === 'InvalidSignatureException' ||
-			error.code === 'InvalidSignatureException'
+			err.name === 'InvalidSignatureException' ||
+			err.code === 'InvalidSignatureException'
 		) {
 			errorMessage = 'Credenciales inválidas. Verifica Access Key y Secret Key.';
-		} else if (error.name === 'UnknownEndpoint' || error.code === 'UnknownEndpoint') {
+		} else if (err.name === 'UnknownEndpoint' || err.code === 'UnknownEndpoint') {
 			errorMessage = 'Endpoint desconocido. Verifica la región y la URL del endpoint.';
-		} else if (error.message) {
-			errorMessage = error.message;
+		} else if ('message' in err && typeof err.message === 'string') {
+			errorMessage = err.message;
 		}
 
 		return json({ success: false, error: errorMessage }, { status: 400 });

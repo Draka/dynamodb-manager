@@ -3,7 +3,7 @@
  * Permite tener varias conexiones DynamoDB abiertas simultáneamente
  */
 
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { setCurrentConnectionCookie } from '../services/connection-manager.js';
 import { setConnection } from './current-connection.js';
 
@@ -87,14 +87,9 @@ export function closeConnection(connectionId) {
 	// Si cerramos la conexión activa, activar otra
 	activeConnectionId.update((current) => {
 		if (current === connectionId) {
-			// Obtener la primera conexión disponible
-			let firstConnection = null;
-			openConnections.subscribe((connections) => {
-				const first = connections.keys().next().value;
-				firstConnection = first || null;
-			})();
-
-			return firstConnection;
+			const connections = get(openConnections);
+			const first = connections.keys().next().value;
+			return first || null;
 		}
 		return current;
 	});
@@ -108,16 +103,15 @@ export function setActiveConnection(connectionId) {
 	activeConnectionId.set(connectionId);
 
 	// Sincronizar con el store de current-connection para compatibilidad
-	openConnections.subscribe((connections) => {
-		const openConn = connections.get(connectionId);
+	const connections = get(openConnections);
+	const openConn = connections.get(connectionId);
 
-		if (openConn) {
-			setCurrentConnectionCookie(openConn.connection);
-			setConnection(openConn.connection);
-		} else {
-			console.warn('❌ No se encontró openConn para ID:', connectionId);
-		}
-	})();
+	if (openConn) {
+		setCurrentConnectionCookie(openConn.connection);
+		setConnection(openConn.connection);
+	} else {
+		console.warn('❌ No se encontró openConn para ID:', connectionId);
+	}
 }
 
 /**
@@ -157,12 +151,9 @@ export function getConnectionById(connectionId) {
 		return null;
 	}
 
-	let result = null;
-	openConnections.subscribe((connections) => {
-		const openConn = connections.get(connectionId);
-		result = openConn ? openConn.connection : null;
-	})();
-	return result;
+	const connections = get(openConnections);
+	const openConn = connections.get(connectionId);
+	return openConn ? openConn.connection : null;
 }
 
 /**
@@ -170,10 +161,7 @@ export function getConnectionById(connectionId) {
  * @param {string} tableName - Nombre de la tabla
  */
 export function selectTable(tableName) {
-	let connectionId;
-	const unsubscribe = activeConnectionId.subscribe((id) => (connectionId = id));
-	unsubscribe();
-
+	const connectionId = get(activeConnectionId);
 	if (!connectionId) return;
 
 	openConnections.update((connections) => {
@@ -194,17 +182,16 @@ export function selectTable(tableName) {
  * @param {string} tabId - ID de la pestaña de datos
  */
 export function setActiveDataTab(tabId) {
-	activeConnectionId.subscribe((connectionId) => {
-		if (!connectionId) return;
+	const connectionId = get(activeConnectionId);
+	if (!connectionId) return;
 
-		openConnections.update((connections) => {
-			const openConn = connections.get(connectionId);
-			if (openConn) {
-				openConn.activeDataTab = tabId;
-			}
-			return connections;
-		});
-	})();
+	openConnections.update((connections) => {
+		const openConn = connections.get(connectionId);
+		if (openConn) {
+			openConn.activeDataTab = tabId;
+		}
+		return connections;
+	});
 }
 
 /**
@@ -242,9 +229,7 @@ export function setConnectionError(connectionId, error) {
  * @returns {OpenConnection | null}
  */
 export function getActiveConnection() {
-	let active = null;
-	activeConnection.subscribe((value) => (active = value))();
-	return active;
+	return get(activeConnection);
 }
 
 /**
@@ -252,9 +237,5 @@ export function getActiveConnection() {
  * @returns {boolean}
  */
 export function hasOpenConnections() {
-	let hasConnections = false;
-	openConnections.subscribe((connections) => {
-		hasConnections = connections.size > 0;
-	})();
-	return hasConnections;
+	return get(openConnections).size > 0;
 }

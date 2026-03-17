@@ -3,7 +3,7 @@
  * Inspirado en Studio 3T para mejor UX
 -->
 <script>
-	import { Modal } from '$lib/components/ui';
+	import { Modal, KeyboardShortcutsHelp } from '$lib/components/ui';
 	import { ConnectionForm, ConnectionList } from '$lib/components/dynamodb';
 	import ConnectionWorkspace from '$lib/components/workspace/ConnectionWorkspace.svelte';
 	import { openConnection } from '$lib/stores/open-connections.js';
@@ -11,6 +11,12 @@
 	import { ThemeToggle } from '$lib/components/ui';
 	import ConnectionStatus from '$lib/components/ui/ConnectionStatus.svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import {
+		initKeyboardShortcuts,
+		cleanupKeyboardShortcuts,
+		registerShortcut
+	} from '$lib/stores/keyboard-shortcuts.js';
+	import { theme } from '$lib/stores/theme.js';
 
 	/**
 	 * @typedef {import('$lib/services/aws-config.js').AWSConnection} AWSConnection
@@ -68,6 +74,86 @@
 	function toggleConnectionList() {
 		showConnectionList = !showConnectionList;
 	}
+
+	/**
+	 * Inicializa los atajos de teclado
+	 */
+	$effect(() => {
+		// Inicializar sistema de atajos
+		initKeyboardShortcuts();
+
+		// Registrar atajos específicos
+		registerShortcut({
+			key: 'n',
+			ctrl: true,
+			description: 'Nueva conexión',
+			category: 'Conexiones',
+			handler: openNewConnection
+		});
+
+		registerShortcut({
+			key: 'r',
+			ctrl: true,
+			description: 'Refrescar tabla actual',
+			category: 'Tabla',
+			handler: () => {
+				// Dispatch custom event para que componentes internos puedan escuchar
+				window.dispatchEvent(new CustomEvent('keyboard-refresh'));
+			}
+		});
+
+		registerShortcut({
+			key: 'f',
+			ctrl: true,
+			description: 'Enfocar búsqueda',
+			category: 'Navegación',
+			handler: () => {
+				// Dispatch custom event
+				window.dispatchEvent(new CustomEvent('keyboard-focus-search'));
+			}
+		});
+
+		registerShortcut({
+			key: 'e',
+			ctrl: true,
+			description: 'Ejecutar consulta/escaneo',
+			category: 'Consultas',
+			handler: () => {
+				// Dispatch custom event
+				window.dispatchEvent(new CustomEvent('keyboard-execute-query'));
+			}
+		});
+
+		registerShortcut({
+			key: 's',
+			ctrl: true,
+			description: 'Guardar registro actual',
+			category: 'Edición',
+			handler: () => {
+				// Dispatch custom event
+				window.dispatchEvent(new CustomEvent('keyboard-save'));
+			}
+		});
+
+		registerShortcut({
+			key: 'Escape',
+			description: 'Cerrar modal/editor',
+			category: 'Navegación',
+			handler: () => {
+				// Dispatch custom event
+				window.dispatchEvent(new CustomEvent('keyboard-close'));
+				// También cerrar el modal de conexión si está abierto
+				if (showConnectionModal) {
+					closeConnectionModal();
+				}
+			}
+		});
+
+		// Cleanup al desmontar
+		return () => {
+			cleanupKeyboardShortcuts();
+		};
+	});
 </script>
 
 <svelte:head>
@@ -78,16 +164,16 @@
 <main class="flex h-screen bg-gray-100 dark:bg-gray-900">
 	<!-- Panel lateral izquierdo: Lista de conexiones -->
 	<div
-		class="flex w-80 flex-col border-r border-gray-700 bg-gray-800 text-white dark:border-gray-600 dark:bg-gray-900 {showConnectionList
+		class="flex w-80 flex-col border-r border-gray-300 bg-gray-50 text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white {showConnectionList
 			? ''
 			: 'hidden'}"
 	>
 		<!-- Header del panel -->
-		<div class="border-b border-gray-700 bg-gray-900 p-4 dark:border-gray-600 dark:bg-gray-800">
+		<div class="border-b border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
 			<div class="flex items-center justify-between">
-				<h1 class="text-lg font-semibold">{m['app.title']()}</h1>
+				<h1 class="text-lg font-semibold text-gray-900 dark:text-white">{m['app.title']()}</h1>
 				<button
-					class="rounded p-1 hover:bg-gray-700 dark:hover:bg-gray-600"
+					class="rounded p-1 text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
 					onclick={toggleConnectionList}
 					title={m['navigation.hidePanel']()}
 				>
@@ -98,7 +184,7 @@
 
 			<!-- Botón nueva conexión -->
 			<button
-				class="mt-3 flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+				class="mt-3 flex w-full items-center justify-center gap-2 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-blue-700 dark:hover:bg-blue-600 dark:focus:ring-offset-gray-800"
 				onclick={openNewConnection}
 			>
 				<Plus size={16} />
@@ -109,13 +195,15 @@
 		<!-- Lista de conexiones -->
 		<div class="flex-1 overflow-y-auto">
 			<div class="p-4">
-				<h2 class="mb-3 text-sm font-medium tracking-wide text-gray-300 uppercase dark:text-gray-400">
+				<h2
+					class="mb-3 text-sm font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400"
+				>
 					{m['navigation.connections']()}
 				</h2>
 				<ConnectionList
 					onEditConnection={openEditConnection}
 					onConnectionSelected={handleConnectionSelected}
-					theme="dark"
+					theme={$theme}
 				/>
 			</div>
 		</div>
@@ -157,7 +245,7 @@
 <!-- Modal de conexión -->
 <Modal
 	bind:open={showConnectionModal}
-	title={editingConnection ? 'Editar Conexión' : 'Nueva Conexión'}
+	title={editingConnection ? m['modal.editConnection']() : m['modal.newConnection']()}
 	size="md"
 >
 	<ConnectionForm
@@ -166,3 +254,6 @@
 		oncancelled={closeConnectionModal}
 	/>
 </Modal>
+
+<!-- Modal de ayuda de atajos de teclado -->
+<KeyboardShortcutsHelp />

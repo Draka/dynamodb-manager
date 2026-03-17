@@ -117,7 +117,7 @@ describe('Connections Store', () => {
 			updateConnection('conn-1', updates);
 
 			const current = get(connections);
-			const updated = current.find(c => c.id === 'conn-1');
+			const updated = current.find((c) => c.id === 'conn-1');
 			expect(updated.name).toBe('Updated Connection 1');
 		});
 
@@ -126,7 +126,7 @@ describe('Connections Store', () => {
 			updateConnection('conn-1', { name: 'Updated' });
 
 			const current = get(connections);
-			const updated = current.find(c => c.id === 'conn-1');
+			const updated = current.find((c) => c.id === 'conn-1');
 			expect(updated.lastUsed).toBeInstanceOf(Date);
 			expect(updated.lastUsed.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
 		});
@@ -135,7 +135,7 @@ describe('Connections Store', () => {
 			updateConnection('conn-1', { name: 'Updated Connection 1' });
 
 			const current = get(connections);
-			const unchanged = current.find(c => c.id === 'conn-2');
+			const unchanged = current.find((c) => c.id === 'conn-2');
 			expect(unchanged.name).toBe('Test Connection 2');
 		});
 
@@ -230,7 +230,7 @@ describe('Connections Store', () => {
 			markConnectionUsed('conn-1');
 
 			const current = get(connections);
-			const updated = current.find(c => c.id === 'conn-1');
+			const updated = current.find((c) => c.id === 'conn-1');
 			expect(updated.lastUsed).toBeInstanceOf(Date);
 			expect(updated.lastUsed.getTime()).toBeGreaterThanOrEqual(beforeMark.getTime());
 		});
@@ -312,11 +312,13 @@ describe('Connections Store', () => {
 		});
 
 		it('should convert date strings to Date objects', () => {
-			const importData = JSON.stringify([{
-				...mockConnection1,
-				createdAt: '2025-01-01T00:00:00.000Z',
-				lastUsed: '2025-01-01T00:00:00.000Z'
-			}]);
+			const importData = JSON.stringify([
+				{
+					...mockConnection1,
+					createdAt: '2025-01-01T00:00:00.000Z',
+					lastUsed: '2025-01-01T00:00:00.000Z'
+				}
+			]);
 
 			importConnections(importData);
 

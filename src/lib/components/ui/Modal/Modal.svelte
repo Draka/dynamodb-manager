@@ -5,6 +5,7 @@
 <script>
 	import { X } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let {
 		/** @type {boolean} Si el modal está abierto */
@@ -45,7 +46,9 @@
 
 	/** Clases computadas del modal */
 	const modalClasses = $derived(
-		['relative bg-white dark:bg-gray-900 rounded-lg shadow-xl', sizeClasses[size]].filter(Boolean).join(' ')
+		['relative bg-white dark:bg-gray-900 rounded-lg shadow-xl', sizeClasses[size]]
+			.filter(Boolean)
+			.join(' ')
 	);
 
 	/**
@@ -61,6 +64,17 @@
 	 */
 	function handleOverlayClick(event) {
 		if (closeOnOverlay && event.target === event.currentTarget) {
+			closeModal();
+		}
+	}
+
+	/**
+	 * Maneja teclado en el overlay (a11y: mismo comportamiento que el click)
+	 * @param {KeyboardEvent} event - Evento de teclado
+	 */
+	function handleOverlayKeydown(event) {
+		if (closeOnOverlay && (event.key === 'Enter' || event.key === ' ')) {
+			event.preventDefault();
 			closeModal();
 		}
 	}
@@ -147,7 +161,7 @@
 {#if open}
 	<!-- Overlay -->
 	<div
-		class="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/20 dark:bg-black/40 bg-opacity-50 p-4 backdrop-blur-sm duration-200"
+		class="animate-in fade-in bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm duration-200 dark:bg-black/40"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby={title ? 'modal-title' : undefined}
@@ -155,6 +169,7 @@
 		in:fade
 		out:fade
 		onclick={handleOverlayClick}
+		onkeydown={handleOverlayKeydown}
 	>
 		<!-- Modal Content -->
 		<div
@@ -175,9 +190,9 @@
 					{#if closable}
 						<button
 							type="button"
-							class="flex h-10 w-10 items-center justify-center rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+							class="flex h-10 w-10 items-center justify-center rounded-md text-gray-400 hover:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-blue-400"
 							onclick={closeModal}
-							aria-label="Cerrar modal"
+							aria-label={m['modal.closeAriaLabel']()}
 						>
 							<X size={20} />
 						</button>
@@ -192,7 +207,7 @@
 
 			<!-- Footer -->
 			{#if footer}
-				<div class="rounded-b-lg bg-gray-50 dark:bg-gray-800 py-4">
+				<div class="rounded-b-lg bg-gray-50 py-4 dark:bg-gray-800">
 					{@render footer()}
 				</div>
 			{/if}

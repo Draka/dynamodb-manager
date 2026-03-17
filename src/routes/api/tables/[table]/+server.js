@@ -44,9 +44,12 @@ export async function GET({ params, cookies, request }) {
 			success: true,
 			data: tableInfo
 		});
-	} catch (error) {
+	} catch (/** @type {unknown} */ error) {
 		console.error('Error obteniendo información de tabla:', error);
 
-		return json({ success: false, error: error.message }, { status: 500 });
+		return json(
+			{ success: false, error: error instanceof Error ? error.message : String(error) },
+			{ status: 500 }
+		);
 	}
 }

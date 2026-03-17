@@ -58,7 +58,8 @@ describe('Button Component - Simple Tests', () => {
 	});
 
 	it('should test base classes configuration', () => {
-		const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+		const baseClasses =
+			'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
 
 		expect(baseClasses).toContain('inline-flex');
 		expect(baseClasses).toContain('items-center');

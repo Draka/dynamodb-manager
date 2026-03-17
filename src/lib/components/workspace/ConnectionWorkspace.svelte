@@ -184,7 +184,9 @@
 		<div class="flex h-full items-center justify-center bg-gray-50 dark:bg-gray-900">
 			<div class="text-center">
 				<HardDrive size={24} class="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
-				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Bienvenido a DynamoDB Manager</h3>
+				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+					Bienvenido a DynamoDB Manager
+				</h3>
 				<p class="mb-6 max-w-sm text-gray-600 dark:text-gray-300">
 					Conecta a una base de datos DynamoDB para comenzar a explorar tus tablas y datos.
 				</p>
@@ -204,8 +206,12 @@
 			{#if $activeConnection}
 				<div class="flex h-full">
 					<!-- Panel lateral con explorador de tablas -->
-					<div class="flex w-80 flex-col overflow-hidden border-r border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-						<div class="border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+					<div
+						class="flex w-80 flex-col overflow-hidden border-r border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+					>
+						<div
+							class="border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
+						>
 							<h3 class="font-medium text-gray-900 dark:text-white">
 								{$activeConnection.connection.name}
 							</h3>
@@ -260,7 +266,9 @@
 							<div class="flex h-full items-center justify-center text-gray-500 dark:text-gray-400">
 								<div class="text-center">
 									<Table size={24} class="mx-auto mb-4" />
-									<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Selecciona una tabla</h3>
+									<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+										Selecciona una tabla
+									</h3>
 									<p class="text-gray-600 dark:text-gray-300">
 										Elige una tabla del panel lateral para comenzar a explorar sus datos.
 									</p>

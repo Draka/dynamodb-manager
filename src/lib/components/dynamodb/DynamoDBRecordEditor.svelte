@@ -3,14 +3,12 @@
  * Soporte completo para tipos DynamoDB nativos y validación
 -->
 <script>
-	import { onMount } from 'svelte';
 	import { Button, TextInput, Select } from '../ui';
-	import { LoadingSpinner } from '../ui/LoadingSpinner';
 	import { Modal } from '../ui/Modal';
-	import TypeSelector from './TypeSelector.svelte';
 	import { dynamoDbApi } from '../../services/api-client.js';
-	import { Plus, X, Save, RotateCcw, Type, CircleQuestionMark, Eye } from 'lucide-svelte';
+	import { Plus, X, Save, RotateCcw, Type, CircleQuestionMark, Eye, Code2 } from 'lucide-svelte';
 	import JsonEditor from './JsonEditor.svelte';
+	import AdvancedJsonEditor from './AdvancedJsonEditor.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	let {
@@ -18,7 +16,8 @@
 		record,
 		/** @type {string} Nombre de la tabla */
 		tableName,
-		/** @type {string} ID de la conexión */
+		/** @type {string} ID de la conexión (reservado para API del componente) */
+		// eslint-disable-next-line no-unused-vars -- prop reservado para llamadas API futuras
 		connectionId,
 		/** @type {boolean} Si el editor está abierto */
 		isOpen = false,
@@ -34,6 +33,7 @@
 	let hasChanges = $state(false);
 	let showPreview = $state(false);
 	let editMode = $state(/** @type {'attributes' | 'json'} */ ('attributes')); // Nuevo modo de edición
+	let useAdvancedEditor = $state(false); // Toggle para editor avanzado vs simple
 
 	/** @type {Array<{key: string, value: any, type: string}>} */
 	let attributes = $state([]);
@@ -189,9 +189,11 @@
 	 * @param {any} av
 	 */
 	/**
+	 * Convierte AttributeValue nativo a valor JS (para uso al cargar datos nativos)
 	 * @param {any} av
 	 * @returns {any}
 	 */
+	// eslint-disable-next-line no-unused-vars -- utilidad para normalización de datos DynamoDB
 	function attributeValueToPlain(av) {
 		if (av == null) return av;
 		if (typeof av !== 'object') return av;
@@ -229,7 +231,7 @@
 	 */
 	function parseValueByType(value, type) {
 		const trimmedValue = value?.trim() || '';
-		
+
 		switch (type) {
 			case 'N':
 				return String(Number(trimmedValue || '0'));
@@ -240,16 +242,25 @@
 			case 'S':
 				return trimmedValue; // String puede estar vacío
 			case 'SS':
-				return trimmedValue 
-					? trimmedValue.split(',').map((s) => s.trim()).filter((s) => s)
+				return trimmedValue
+					? trimmedValue
+							.split(',')
+							.map((s) => s.trim())
+							.filter((s) => s)
 					: [];
 			case 'NS':
 				return trimmedValue
-					? trimmedValue.split(',').map((s) => String(Number(s.trim()))).filter((s) => s !== 'NaN')
+					? trimmedValue
+							.split(',')
+							.map((s) => String(Number(s.trim())))
+							.filter((s) => s !== 'NaN')
 					: [];
 			case 'BS':
 				return trimmedValue
-					? trimmedValue.split(',').map((s) => s.trim()).filter((s) => s)
+					? trimmedValue
+							.split(',')
+							.map((s) => s.trim())
+							.filter((s) => s)
 					: [];
 			case 'L':
 				if (!trimmedValue) return [];
@@ -278,10 +289,10 @@
 	function validateAttribute(value, type) {
 		// NULL no requiere valor
 		if (type === 'NULL') return '';
-		
+
 		// String vacío está permitido para tipo S
 		if (type === 'S') return '';
-		
+
 		// Para otros tipos, verificar si hay contenido cuando se requiere
 		const trimmedValue = value?.trim() || '';
 
@@ -386,7 +397,6 @@
 				// Validar JSON
 				try {
 					recordToSave = JSON.parse(jsonContent);
-					console.log('JSON a guardar:', recordToSave);
 				} catch (/** @type {any} */ jsonError) {
 					error = `JSON inválido: ${jsonError.message}`;
 					saving = false;
@@ -427,13 +437,7 @@
 					recordToSave[key] = parseValueByType(value, type);
 				});
 
-				console.log('Atributos a guardar:', recordToSave);
-			}
-
-			// Log del record final
-			console.log('Record final a enviar a DynamoDB:', recordToSave);
-			console.log('Tamaño del record:', JSON.stringify(recordToSave).length, 'bytes');
-			console.log('Tabla destino:', tableName);
+				}
 
 			// En modo atributos, si el usuario ingresó valores como { S, N, L, ... }, ofrecer guardado nativo
 			let response;
@@ -448,9 +452,9 @@
 				const nativeItem = {};
 				attributes.forEach(({ key, value, type }) => {
 					if (!key.trim()) return;
-					
+
 					const trimmedValue = value?.trim() || '';
-					
+
 					if (type === 'N') {
 						nativeItem[key] = { N: String(Number(trimmedValue || '0')) };
 					} else if (type === 'BOOL') {
@@ -458,13 +462,29 @@
 					} else if (type === 'NULL') {
 						nativeItem[key] = { NULL: true };
 					} else if (type === 'SS') {
-						const parts = trimmedValue ? trimmedValue.split(',').map(s => s.trim()).filter(s => s) : [];
+						const parts = trimmedValue
+							? trimmedValue
+									.split(',')
+									.map((/** @type {string} */ s) => s.trim())
+									.filter((/** @type {string} */ s) => s)
+							: [];
 						nativeItem[key] = { SS: parts };
 					} else if (type === 'NS') {
-						const parts = trimmedValue ? trimmedValue.split(',').map(s => s.trim()).filter(s => s && !isNaN(Number(s))).map(s => String(Number(s))) : [];
+						const parts = trimmedValue
+							? trimmedValue
+									.split(',')
+									.map((/** @type {string} */ s) => s.trim())
+									.filter((/** @type {string} */ s) => s && !isNaN(Number(s)))
+									.map((/** @type {string} */ s) => String(Number(s)))
+							: [];
 						nativeItem[key] = { NS: parts };
 					} else if (type === 'BS') {
-						const parts = trimmedValue ? trimmedValue.split(',').map(s => s.trim()).filter(s => s) : [];
+						const parts = trimmedValue
+							? trimmedValue
+									.split(',')
+									.map((/** @type {string} */ s) => s.trim())
+									.filter((/** @type {string} */ s) => s)
+							: [];
 						nativeItem[key] = { BS: parts };
 					} else if (type === 'L') {
 						if (!trimmedValue) {
@@ -518,7 +538,7 @@
 	 * Maneja el cierre del editor
 	 */
 	function handleClose() {
-		if (hasChanges && !confirm(m["recordEditorAdvanced.discardChanges"]())) {
+		if (hasChanges && !confirm(m['recordEditorAdvanced.discardChanges']())) {
 			return;
 		}
 
@@ -526,9 +546,10 @@
 	}
 
 	/**
-	 * Obtiene el ícono para un tipo DynamoDB
+	 * Obtiene el ícono para un tipo DynamoDB (para UI de tipos)
 	 * @param {string} type
 	 */
+	// eslint-disable-next-line no-unused-vars -- reservado para mostrar tipo en UI
 	function getTypeIcon(type) {
 		switch (type) {
 			case 'S':
@@ -603,37 +624,58 @@
 <Modal open={isOpen} onclose={handleClose} size="xl">
 	<div class="flex h-[80vh] flex-col">
 		<!-- Header -->
-		<div class="border-b border-gray-200 dark:border-gray-700 p-4">
+		<div class="border-b border-gray-200 p-4 dark:border-gray-700">
 			<div class="flex items-center justify-between">
 				<div>
-					<h2 class="text-xl font-semibold text-gray-900 dark:text-white">{m["recordEditorAdvanced.title"]()}</h2>
+					<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+						{m['recordEditorAdvanced.title']()}
+					</h2>
 					<p class="text-sm text-gray-600 dark:text-gray-300">
-						{m["recordEditorAdvanced.tableLabel"]()} <code class="rounded bg-gray-100 dark:bg-gray-700 px-1 text-gray-900 dark:text-gray-100">{tableName}</code>
+						{m['recordEditorAdvanced.tableLabel']()}
+						<code class="rounded bg-gray-100 px-1 text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+							>{tableName}</code
+						>
 					</p>
 				</div>
 
 				<div class="flex gap-2">
 					<!-- Toggle de modo de edición -->
-					<div class="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+					<div class="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700">
 						<button
 							class="rounded-md px-3 py-1 text-sm transition-colors {editMode === 'attributes'
-								? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-								: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
+								? 'bg-white text-gray-900 shadow-sm dark:bg-gray-600 dark:text-white'
+								: 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'}"
 							onclick={() => (editMode = 'attributes')}
 							disabled={saving}
 						>
-							{m["recordEditorAdvanced.attributes"]()}
+							{m['recordEditorAdvanced.attributes']()}
 						</button>
 						<button
 							class="rounded-md px-3 py-1 text-sm transition-colors {editMode === 'json'
-								? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-								: 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}"
+								? 'bg-white text-gray-900 shadow-sm dark:bg-gray-600 dark:text-white'
+								: 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'}"
 							onclick={() => (editMode = 'json')}
 							disabled={saving}
 						>
 							JSON
 						</button>
 					</div>
+
+					<!-- Toggle de editor simple/avanzado (solo en modo JSON) -->
+					{#if editMode === 'json'}
+						<button
+							type="button"
+							class="flex items-center gap-1 rounded-md px-3 py-1 text-sm transition-colors {useAdvancedEditor
+								? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+								: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}"
+							onclick={() => (useAdvancedEditor = !useAdvancedEditor)}
+							disabled={saving}
+							title={useAdvancedEditor ? 'Usar editor simple' : 'Usar editor avanzado (Monaco)'}
+						>
+							<Code2 size={14} />
+							{useAdvancedEditor ? 'Avanzado' : 'Simple'}
+						</button>
+					{/if}
 
 					{#if editMode === 'attributes'}
 						<Button
@@ -642,26 +684,28 @@
 							disabled={saving}
 						>
 							<Eye size={16} />
-							{showPreview ? m["recordEditorAdvanced.hide"]() : m["recordEditorAdvanced.view"]()} JSON
+							{showPreview ? m['recordEditorAdvanced.hide']() : m['recordEditorAdvanced.view']()} JSON
 						</Button>
 					{/if}
 
 					{#if hasChanges}
 						<Button variant="secondary" onclick={resetChanges} disabled={saving}>
 							<RotateCcw size={16} />
-							{m["recordEditorAdvanced.reset"]()}
+							{m['recordEditorAdvanced.reset']()}
 						</Button>
 					{/if}
 
 					<Button onclick={saveChanges} loading={saving} disabled={!hasChanges}>
 						<Save size={16} />
-						{m["button.save"]()}
+						{m['button.save']()}
 					</Button>
 				</div>
 			</div>
 
 			{#if error}
-				<div class="mt-3 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3">
+				<div
+					class="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
+				>
 					<p class="text-sm text-red-700 dark:text-red-400">{error}</p>
 				</div>
 			{/if}
@@ -670,13 +714,23 @@
 		<!-- Content -->
 		<div class="flex-1 overflow-hidden">
 			{#if editMode === 'json'}
-				<!-- Editor JSON avanzado -->
+				<!-- Editor JSON -->
 				<div class="h-full overflow-y-auto p-4">
-					<JsonEditor bind:value={jsonContent} disabled={saving} onchange={handleJsonChange} />
+					{#if useAdvancedEditor}
+						<AdvancedJsonEditor
+							bind:value={jsonContent}
+							disabled={saving}
+							onchange={handleJsonChange}
+						/>
+					{:else}
+						<JsonEditor bind:value={jsonContent} disabled={saving} onchange={handleJsonChange} />
+					{/if}
 				</div>
 			{:else if showPreview}
 				<!-- Vista previa JSON -->
-				<div class="h-full overflow-y-auto border-t border-gray-200 dark:border-gray-700 bg-gray-900 dark:bg-gray-950 p-4 text-white">
+				<div
+					class="h-full overflow-y-auto border-t border-gray-200 bg-gray-900 p-4 text-white dark:border-gray-700 dark:bg-gray-950"
+				>
 					<h3 class="mb-4 text-lg font-medium text-white">Vista Previa DynamoDB JSON</h3>
 					<pre class="overflow-x-auto text-sm"><code
 							>{JSON.stringify(editableToDynamo(attributes), null, 2)}</code
@@ -688,24 +742,31 @@
 					<div class="space-y-4">
 						<!-- Add attribute button -->
 						<div class="flex items-center justify-between">
-							<h3 class="text-lg font-medium text-gray-900 dark:text-white">{m["recordEditorAdvanced.attributes"]()} ({attributes.length})</h3>
+							<h3 class="text-lg font-medium text-gray-900 dark:text-white">
+								{m['recordEditorAdvanced.attributes']()} ({attributes.length})
+							</h3>
 							<Button size="sm" onclick={addAttribute} disabled={saving}>
 								<Plus size={16} />
-								{m["recordEditorAdvanced.addAttribute"]()}
+								{m['recordEditorAdvanced.addAttribute']()}
 							</Button>
 						</div>
 
 						<!-- Attributes list -->
 						{#each attributes as attr, index (index)}
-							<div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+							<div
+								class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
+							>
 								<div class="relative grid grid-cols-12 items-start gap-4">
 									<!-- Key -->
 									<div class="col-span-3">
-										<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="attr-key">
-											{m["recordEditorAdvanced.key"]()}
+										<label
+											class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+											for="attr-key-{index}"
+										>
+											{m['recordEditorAdvanced.key']()}
 										</label>
 										<TextInput
-											id="attr-key"
+											id="attr-key-{index}"
 											bind:value={attr.key}
 											placeholder="nombre_atributo"
 											disabled={saving}
@@ -715,11 +776,14 @@
 
 									<!-- Type -->
 									<div class="col-span-3">
-										<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="attr-type">
-											{m["recordEditorAdvanced.type"]()}
+										<label
+											class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+											for="attr-type-{index}"
+										>
+											{m['recordEditorAdvanced.type']()}
 										</label>
 										<Select
-											id="attr-type"
+											id="attr-type-{index}"
 											value={attr.type}
 											options={DYNAMODB_TYPES}
 											disabled={saving}
@@ -730,18 +794,23 @@
 
 									<!-- Value -->
 									<div class="col-span-6">
-										<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="attr-value">
-											{m["recordEditorAdvanced.value"]()}
+										<label
+											class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+											for="attr-value-{index}"
+										>
+											{m['recordEditorAdvanced.value']()}
 											{#if ['L', 'M'].includes(attr.type)}
 												<span class="text-xs text-gray-500 dark:text-gray-400">(JSON)</span>
 											{:else if ['SS', 'NS', 'BS'].includes(attr.type)}
-												<span class="text-xs text-gray-500 dark:text-gray-400">(separado por comas)</span>
+												<span class="text-xs text-gray-500 dark:text-gray-400"
+													>(separado por comas)</span
+												>
 											{/if}
 										</label>
 
 										{#if attr.type === 'BOOL'}
 											<Select
-												id="attr-value"
+												id="attr-value-{index}"
 												bind:value={attr.value}
 												options={[
 													{ value: 'true', label: 'true' },
@@ -751,12 +820,12 @@
 												onchange={() => (hasChanges = true)}
 											/>
 										{:else if attr.type === 'NULL'}
-											<TextInput id="attr-value" value="null" disabled={true} />
+											<TextInput id="attr-value-{index}" value="null" disabled={true} />
 										{:else if ['L', 'M'].includes(attr.type)}
 											<textarea
-												id="attr-value"
+												id="attr-value-{index}"
 												bind:value={attr.value}
-												class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
+												class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
 												rows="3"
 												placeholder={attr.type === 'L' ? '["item1", "item2"]' : '{"key": "value"}'}
 												disabled={saving}
@@ -764,7 +833,7 @@
 											></textarea>
 										{:else}
 											<TextInput
-												id="attr-value"
+												id="attr-value-{index}"
 												bind:value={attr.value}
 												placeholder={attr.type === 'N'
 													? '123'
@@ -787,13 +856,13 @@
 									</div>
 
 									<!-- Remove button -->
-									<div class=" absolute -right-3 -top-3">
+									<div class=" absolute -top-3 -right-3">
 										<Button
 											size="sm"
 											variant="secondary"
 											onclick={() => removeAttribute(index)}
 											disabled={saving}
-											class="flex h-8 w-8 items-center justify-center rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
+											class="flex h-8 w-8 items-center justify-center rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
 										>
 											<X size={16} />
 										</Button>
@@ -805,8 +874,10 @@
 						{#if attributes.length === 0}
 							<div class="py-8 text-center text-gray-500 dark:text-gray-400">
 								<Type size={48} class="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
-								<p>{m["recordEditorAdvanced.noAttributes"]()}</p>
-								<p class="text-sm">Haz clic en "{m["recordEditorAdvanced.addAttribute"]()}" para comenzar</p>
+								<p>{m['recordEditorAdvanced.noAttributes']()}</p>
+								<p class="text-sm">
+									Haz clic en "{m['recordEditorAdvanced.addAttribute']()}" para comenzar
+								</p>
 							</div>
 						{/if}
 					</div>
@@ -815,13 +886,15 @@
 		</div>
 
 		<!-- Info panel -->
-		<div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3">
+		<div
+			class="border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800"
+		>
 			<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
 				<CircleQuestionMark size={16} />
 				<span>
-					{m["recordEditorAdvanced.typesInfo"]()}
+					{m['recordEditorAdvanced.typesInfo']()}
 					{#if hasChanges}
-						• <strong>{m["recordEditorAdvanced.unsavedChanges"]()}</strong>
+						• <strong>{m['recordEditorAdvanced.unsavedChanges']()}</strong>
 					{/if}
 				</span>
 			</div>

@@ -92,12 +92,14 @@
 
 <!-- Contenedor principal -->
 <div
+	role="status"
+	aria-live="polite"
 	class="flex items-center gap-2 rounded-md border px-3 py-2 transition-colors {$connectionStatus ===
 	'connected'
-		? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+		? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
 		: $connectionStatus === 'error'
-			? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
-			: 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20'}"
+			? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
+			: 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20'}"
 >
 	<!-- Ícono de estado -->
 	<div class="{getStatusColor($connectionStatus)} flex-shrink-0">

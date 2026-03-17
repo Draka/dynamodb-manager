@@ -28,12 +28,12 @@ export async function POST({ request }) {
 			success: true,
 			message: `Conexión ${connectionId} registrada exitosamente`
 		});
-	} catch (error) {
+	} catch (/** @type {unknown} */ error) {
 		console.error('Error registrando conexión:', error);
 		return json(
 			{
 				success: false,
-				error: error.message
+				error: error instanceof Error ? error.message : String(error)
 			},
 			{ status: 500 }
 		);

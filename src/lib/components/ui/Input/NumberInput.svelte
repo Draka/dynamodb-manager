@@ -3,6 +3,7 @@
  * Incluye validación, min/max y formateo
 -->
 <script>
+	import { Code } from 'lucide-svelte';
 	let {
 		/** @type {number | null} Valor numérico del input */
 		value = $bindable(null),

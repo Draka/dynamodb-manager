@@ -16,6 +16,7 @@ While the market is flooded with expensive DynamoDB clients that charge premium 
 ## 🎯 Features
 
 ### 🔗 Connection Management
+
 - **Multiple simultaneous connections** - Work with several DynamoDB instances at once
 - **Secure credential storage** - Your AWS keys are stored locally and securely
 - **Connection testing** - Automatic validation before connecting
@@ -23,6 +24,7 @@ While the market is flooded with expensive DynamoDB clients that charge premium 
 - **Auto-reconnection** - Smart retry mechanism for interrupted connections
 
 ### 📊 Data Operations
+
 - **Advanced table explorer** - Browse all tables with schema information
 - **Dual view modes** - Switch between table view and JSON view instantly
 - **Smart pagination** - Navigate large datasets efficiently
@@ -31,6 +33,7 @@ While the market is flooded with expensive DynamoDB clients that charge premium 
 - **Batch operations** - Handle multiple records efficiently
 
 ### 🛠️ Developer Experience
+
 - **Tab-based interface** - Work with multiple tables simultaneously
 - **Syntax highlighting** - JSON data with beautiful color coding
 - **Real-time validation** - DynamoDB type checking (S, N, BOOL, etc.)
@@ -40,23 +43,27 @@ While the market is flooded with expensive DynamoDB clients that charge premium 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/Draka/dynamodb-manager.git
    cd dynamodb-manager
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Run in development mode**
+
    ```bash
    # Web version
    npm run dev
@@ -66,6 +73,7 @@ While the market is flooded with expensive DynamoDB clients that charge premium 
    ```
 
 4. **Build for production**
+
    ```bash
    # Web build
    npm run build
@@ -102,9 +110,11 @@ docker run -p 8000:8000 amazon/dynamodb-local
 ## 📸 Screenshots
 
 ### Main Interface - Multi-Connection Tab View
+
 ![DynamoDB Manager Main Interface](screen/capture_001.png)
 
 **What you see:**
+
 - **Left Panel**: Multiple connections (Local DynamoDB + AWS) with connection status
 - **Center Panel**: Table explorer showing all available tables with item counts
 - **Right Panel**: Data viewer with dual modes (Table/JSON) and smart pagination
@@ -132,6 +142,7 @@ We welcome contributions! Here's how you can help:
    - Clone your fork: `git clone https://github.com/yourusername/dynamodb-manager.git`
 
 2. **Create a feature branch**
+
    ```bash
    git checkout -b feature/amazing-feature
    ```
@@ -142,6 +153,7 @@ We welcome contributions! Here's how you can help:
    - Update documentation as needed
 
 4. **Test your changes**
+
    ```bash
    npm run test
    npm run lint
@@ -218,4 +230,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by developers, for developers. Free forever.**
 
-> *"Because good tools shouldn't cost a fortune."*
+> _"Because good tools shouldn't cost a fortune."_

@@ -4,7 +4,7 @@
  */
 
 import { error, json } from '@sveltejs/kit';
-import { DynamoDBClient, DescribeTableCommand } from '@aws-sdk/client-dynamodb';
+import { DescribeTableCommand } from '@aws-sdk/client-dynamodb';
 import { ScanCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { getServerConnection } from '$lib/stores/server-connections.js';
 import { createDynamoDBService } from '$lib/services/dynamodb-service.js';
@@ -43,15 +43,15 @@ export async function DELETE({ params, url }) {
 
 		// Primero necesitamos obtener información de las claves de la tabla
 		const describeResponse = await client.send(new DescribeTableCommand({ TableName: tableName }));
-		
+
 		const keySchema = describeResponse.Table?.KeySchema;
 		if (!keySchema) {
 			return error(500, { message: 'No se pudo obtener el esquema de claves de la tabla' });
 		}
 
 		// Extraer nombres de las claves primarias
-		const hashKey = keySchema.find(key => key.KeyType === 'HASH')?.AttributeName;
-		const rangeKey = keySchema.find(key => key.KeyType === 'RANGE')?.AttributeName;
+		const hashKey = keySchema.find((key) => key.KeyType === 'HASH')?.AttributeName;
+		const rangeKey = keySchema.find((key) => key.KeyType === 'RANGE')?.AttributeName;
 
 		if (!hashKey) {
 			return error(500, { message: 'No se encontró la clave hash de la tabla' });
@@ -60,6 +60,7 @@ export async function DELETE({ params, url }) {
 		// Escanear y borrar en lotes
 		do {
 			// Escanear la tabla para obtener items
+			/** @type {{ TableName: string; ProjectionExpression: string; Limit: number; ExclusiveStartKey?: Record<string, any> }} */
 			const scanParams = {
 				TableName: tableName,
 				ProjectionExpression: rangeKey ? `${hashKey}, ${rangeKey}` : hashKey,
@@ -78,40 +79,41 @@ export async function DELETE({ params, url }) {
 			// Procesar items en lotes de 25 (límite de BatchWriteItem)
 			for (let i = 0; i < items.length; i += batchSize) {
 				const batch = items.slice(i, i + batchSize);
-				
+
 				// Borrar cada item individual (más confiable que BatchWrite)
 				for (const item of batch) {
 					try {
 						const key = {
 							[hashKey]: item[hashKey]
 						};
-						
+
 						if (rangeKey && item[rangeKey] !== undefined) {
 							key[rangeKey] = item[rangeKey];
 						}
 
-						await docClient.send(new DeleteCommand({
-							TableName: tableName,
-							Key: key
-						}));
-						
+						await docClient.send(
+							new DeleteCommand({
+								TableName: tableName,
+								Key: key
+							})
+						);
+
 						deletedCount++;
-					} catch (err) {
+					} catch (/** @type {unknown} */ err) {
 						errors.push({
 							key: rangeKey ? `${item[hashKey]}#${item[rangeKey]}` : item[hashKey],
-							error: err.message
+							error: err instanceof Error ? err.message : String(err)
 						});
 					}
 				}
 			}
 
 			lastEvaluatedKey = scanResponse.LastEvaluatedKey;
-			
+
 			// Pequeña pausa para no saturar DynamoDB
 			if (lastEvaluatedKey) {
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
-
 		} while (lastEvaluatedKey);
 
 		const response = {
@@ -123,22 +125,21 @@ export async function DELETE({ params, url }) {
 		};
 
 		return json(response);
-
-	} catch (err) {
+	} catch (/** @type {unknown} */ err) {
 		console.error('❌ Error borrando todos los registros:', err);
 
-		if (err.name === 'ResourceNotFoundException') {
+		const e =
+			err && typeof err === 'object' && 'name' in err ? /** @type {{ name?: string }} */ (err) : {};
+		if (e.name === 'ResourceNotFoundException') {
 			return error(404, { message: `Tabla '${params.table}' no encontrada` });
 		}
 
-		if (err.name === 'UnrecognizedClientException') {
+		if (e.name === 'UnrecognizedClientException') {
 			return error(401, { message: 'Credenciales AWS inválidas' });
 		}
 
-		return error(500, {
-			message: `Error borrando registros: ${err.message}`,
-			details: err.toString()
-		});
+		const msg = err instanceof Error ? err.message : String(err);
+		return error(500, { message: `Error borrando registros: ${msg}` });
 	} finally {
 		// Cerrar el servicio si fue creado
 		if (service) {

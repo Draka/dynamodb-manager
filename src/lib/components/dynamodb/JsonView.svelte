@@ -4,6 +4,7 @@
 -->
 <script>
 	import { ChevronDown, Copy, FileText, Menu, SquarePen } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * @typedef {Object} Record
@@ -100,7 +101,7 @@
 		const escaped = jsonText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 		return escaped.replace(
-			/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+			/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
 			(match) => {
 				let cls = 'json-number';
 				if (match.startsWith('"')) {
@@ -118,11 +119,13 @@
 
 <div class="flex h-full flex-col gap-2">
 	<!-- Controles -->
-	<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
+	<div
+		class="flex items-center justify-between border-b border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800"
+	>
 		<div class="flex items-center gap-4">
 			<button
 				type="button"
-				class="flex items-center gap-2 rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1 text-sm text-gray-900 dark:text-white transition-colors hover:bg-gray-50 dark:hover:bg-gray-600"
+				class="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm text-gray-900 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
 				onclick={toggleCompactView}
 			>
 				<Menu size={16} />
@@ -137,7 +140,7 @@
 
 		<button
 			type="button"
-			class="flex items-center gap-2 rounded-md bg-blue-600 dark:bg-blue-500 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700 dark:hover:bg-blue-600"
+			class="flex items-center gap-2 rounded-md bg-blue-600 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
 			onclick={copyAllRecords}
 		>
 			<Copy size={16} />
@@ -148,7 +151,9 @@
 	<!-- Vista de registros -->
 	<div class="flex-1 space-y-2 overflow-y-auto">
 		{#each records as record, index (index)}
-			<div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+			<div
+				class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+			>
 				<!-- Header del registro -->
 				<div
 					class="flex cursor-pointer items-center justify-between p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -178,27 +183,27 @@
 						{#if onEditRecord}
 							<button
 								type="button"
-								class="text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+								class="text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
 								onclick={(e) => {
 									e.stopPropagation();
 									onEditRecord?.(record);
 								}}
-								title="Editar registro"
+								title={m['jsonView.editRecordTitle']()}
 							>
 								<SquarePen size={16} />
-								<span class="sr-only">Editar registro</span>
+								<span class="sr-only">{m['jsonView.editRecordTitle']()}</span>
 							</button>
 						{/if}
 
 						{#if onDeleteRecord}
 							<button
 								type="button"
-								class="text-gray-400 dark:text-gray-500 transition-colors hover:text-red-600 dark:hover:text-red-400"
+								class="text-gray-400 transition-colors hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400"
 								onclick={(e) => {
 									e.stopPropagation();
 									onDeleteRecord?.(record);
 								}}
-								title="Eliminar registro"
+								title={m['jsonView.deleteRecordTitle']()}
 							>
 								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
@@ -208,26 +213,27 @@
 										d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
 									/>
 								</svg>
-								<span class="sr-only">Eliminar registro</span>
+								<span class="sr-only">{m['jsonView.deleteRecordTitle']()}</span>
 							</button>
 						{/if}
 
 						<button
 							type="button"
-							class="text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+							class="text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
 							onclick={(e) => {
 								e.stopPropagation();
 								copyRecord(record);
 							}}
-							title="Copiar registro"
+							title={m['jsonView.copyRecordTitle']()}
 						>
 							<Copy size={16} />
-							<span class="sr-only">Copiar registro</span>
+							<span class="sr-only">{m['jsonView.copyRecordTitle']()}</span>
 						</button>
 
 						<ChevronDown
 							size={16}
-							class="transform text-gray-400 dark:text-gray-500 transition-transform {selectedRecord === index
+							class="transform text-gray-400 transition-transform dark:text-gray-500 {selectedRecord ===
+							index
 								? 'rotate-180'
 								: ''}"
 						/>
@@ -238,8 +244,9 @@
 				{#if selectedRecord === index || !compactView}
 					<div class="h-px bg-gray-200 dark:bg-gray-700"></div>
 					<div
-						class="overflow-x-auto rounded-md bg-gray-50 dark:bg-gray-800 p-4 font-mono text-sm leading-relaxed whitespace-pre text-gray-900 dark:text-gray-100"
+						class="overflow-x-auto rounded-md bg-gray-50 p-4 font-mono text-sm leading-relaxed whitespace-pre text-gray-900 dark:bg-gray-800 dark:text-gray-100"
 					>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- content from syntaxHighlight() is escaped -->
 						{@html syntaxHighlight(record)}
 					</div>
 				{/if}
@@ -252,7 +259,9 @@
 		<div class="py-12 text-center">
 			<FileText size={48} class="mx-auto text-gray-400" />
 			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin datos JSON</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No hay registros para mostrar en formato JSON.</p>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+				No hay registros para mostrar en formato JSON.
+			</p>
 		</div>
 	{/if}
 </div>

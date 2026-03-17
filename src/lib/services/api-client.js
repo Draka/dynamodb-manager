@@ -3,8 +3,10 @@
  * Maneja todas las llamadas HTTP desde el frontend al backend
  */
 
+import { get } from 'svelte/store';
 import { activeConnectionId } from '../stores/open-connections.js';
 import { connectionStatus } from '../stores/current-connection.js';
+import { getCachedSchema, cacheSchema, invalidateSchema } from '../stores/table-schemas.js';
 
 /**
  * @typedef {Object} ApiResponse
@@ -33,22 +35,28 @@ class ApiClient {
 				...options
 			});
 
-			const data = await response.json();
+			let data;
+			try {
+				data = await response.json();
+			} catch {
+				throw new Error(`HTTP ${response.status}: Respuesta no válida del servidor`);
+			}
 
 			if (!response.ok) {
 				throw new Error(data.error || `HTTP ${response.status}`);
 			}
 
 			return data;
-		} catch (error) {
+		} catch (/** @type {unknown} */ error) {
 			console.error('API request failed:', error);
-			
+
 			// Detectar errores de conexión AWS
-			const errorMsg = error.message || 'Error de conexión';
+			const errorMsg =
+				(error instanceof Error ? error.message : String(error)) || 'Error de conexión';
 			if (this.isAWSConnectionError(errorMsg)) {
 				connectionStatus.set('error');
 			}
-			
+
 			return {
 				success: false,
 				error: errorMsg
@@ -120,8 +128,8 @@ class ApiClient {
 			'TokenRefreshRequired',
 			'ExpiredToken'
 		];
-		
-		return connectionErrorPatterns.some(pattern => 
+
+		return connectionErrorPatterns.some((pattern) =>
 			errorMessage.toLowerCase().includes(pattern.toLowerCase())
 		);
 	}
@@ -131,6 +139,15 @@ class ApiClient {
  * Cliente específico para DynamoDB APIs
  */
 class DynamoDBApiClient extends ApiClient {
+	/**
+	 * Obtiene el connectionId activo del store o usa el proporcionado
+	 * @param {string | null | undefined} [explicitId] - ID explícito (tiene prioridad)
+	 * @returns {string | null} connectionId
+	 */
+	_getConnectionId(explicitId) {
+		return explicitId ?? get(activeConnectionId);
+	}
+
 	/**
 	 * Prueba una conexión DynamoDB
 	 * @param {Object} connectionData - Datos de la conexión
@@ -155,72 +172,76 @@ class DynamoDBApiClient extends ApiClient {
 	 * @returns {Promise<ApiResponse>} Lista de tablas
 	 */
 	async listTables() {
-		// Obtener connectionId del store activo
-		let currentConnectionId;
-		activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-
+		const connId = this._getConnectionId();
 		return this.get('/api/tables', {
-			headers: {
-				'x-connection-id': currentConnectionId
-			}
+			headers: connId != null ? { 'x-connection-id': connId } : undefined
 		});
 	}
 
 	/**
 	 * Obtiene información detallada de una tabla
 	 * @param {string} tableName - Nombre de la tabla
-	 * @param {string} [connectionId] - ID de conexión específico
+	 * @param {string | null | undefined} [connectionId] - ID de conexión específico
+	 * @param {boolean} [forceRefresh=false] - Forzar actualización ignorando cache
 	 * @returns {Promise<ApiResponse>} Información de la tabla
 	 */
-	async getTableInfo(tableName, connectionId = null) {
-		// Usar connectionId explícito si se proporciona, sino usar del store activo
-		let currentConnectionId = connectionId;
-		if (!currentConnectionId) {
-			activeConnectionId.subscribe((id) => (currentConnectionId = id))();
+	async getTableInfo(tableName, connectionId = undefined, forceRefresh = false) {
+		const connId = this._getConnectionId(connectionId);
+		if (connId == null) {
+			return { success: false, error: 'No hay conexión activa' };
 		}
 
-		return this.get(`/api/tables/${encodeURIComponent(tableName)}`, {
-			headers: {
-				'x-connection-id': currentConnectionId
+		// Intentar obtener del cache si no se fuerza refresh
+		if (!forceRefresh) {
+			const cached = getCachedSchema(connId, tableName);
+			if (cached) {
+				return {
+					success: true,
+					data: cached
+				};
 			}
+		}
+
+		// Hacer la llamada a la API
+		const response = await this.get(`/api/tables/${encodeURIComponent(tableName)}`, {
+			headers: { 'x-connection-id': connId }
 		});
+
+		// Cachear el resultado si fue exitoso
+		if (response.success && response.data && connId != null) {
+			cacheSchema(connId, tableName, response.data);
+		}
+
+		return response;
 	}
 
 	/**
 	 * Escanea una tabla con parámetros opcionales
 	 * @param {string} tableName - Nombre de la tabla
-	 * @param {Object} params - Parámetros del scan
+	 * @param {{ connectionId?: string | null; [key: string]: any }} [params] - Parámetros del scan
 	 * @returns {Promise<ApiResponse>} Resultados del scan
 	 */
 	async scanTable(tableName, params = {}) {
-		// Usar connectionId explícito si se proporciona, sino usar del store activo
-		let currentConnectionId = params.connectionId;
-		if (!currentConnectionId) {
-			activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-		}
+		const connId = this._getConnectionId(params?.connectionId);
 
 		return this.post(`/api/tables/${encodeURIComponent(tableName)}/scan`, {
 			...params,
-			connectionId: currentConnectionId
+			connectionId: connId
 		});
 	}
 
 	/**
 	 * Realiza una query en una tabla
 	 * @param {string} tableName - Nombre de la tabla
-	 * @param {Object} params - Parámetros de la query
+	 * @param {{ connectionId?: string | null; [key: string]: any }} [params] - Parámetros de la query
 	 * @returns {Promise<ApiResponse>} Resultados de la query
 	 */
 	async queryTable(tableName, params = {}) {
-		// Usar connectionId explícito si se proporciona, sino usar del store activo
-		let currentConnectionId = params.connectionId;
-		if (!currentConnectionId) {
-			activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-		}
+		const connId = this._getConnectionId(params?.connectionId);
 
 		return this.post(`/api/tables/${encodeURIComponent(tableName)}/query`, {
 			...params,
-			connectionId: currentConnectionId
+			connectionId: connId
 		});
 	}
 
@@ -231,13 +252,9 @@ class DynamoDBApiClient extends ApiClient {
 	 * @returns {Promise<ApiResponse>} Resultado de la operación
 	 */
 	async putItem(tableName, item) {
-		// Obtener connectionId del store activo
-		let currentConnectionId;
-		activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-
 		return this.post(`/api/tables/${encodeURIComponent(tableName)}/items`, {
 			...item,
-			connectionId: currentConnectionId
+			connectionId: this._getConnectionId()
 		});
 	}
 
@@ -249,15 +266,11 @@ class DynamoDBApiClient extends ApiClient {
 	 * @returns {Promise<ApiResponse>} Resultado de la operación
 	 */
 	async putItemNative(tableName, nativeItem, options = {}) {
-		// Obtener connectionId del store activo
-		let currentConnectionId;
-		activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-
 		return this.post(`/api/tables/${encodeURIComponent(tableName)}/items`, {
 			__native: true,
 			item: nativeItem,
 			...options,
-			connectionId: currentConnectionId
+			connectionId: this._getConnectionId()
 		});
 	}
 
@@ -269,14 +282,10 @@ class DynamoDBApiClient extends ApiClient {
 	 * @returns {Promise<ApiResponse>} Resultado de la operación
 	 */
 	async updateItem(tableName, key, updates) {
-		// Obtener connectionId del store activo
-		let currentConnectionId;
-		activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-
 		return this.put(`/api/tables/${encodeURIComponent(tableName)}/items`, {
 			key,
 			updates,
-			connectionId: currentConnectionId
+			connectionId: this._getConnectionId()
 		});
 	}
 
@@ -287,13 +296,9 @@ class DynamoDBApiClient extends ApiClient {
 	 * @returns {Promise<ApiResponse>} Resultado de la operación
 	 */
 	async deleteItem(tableName, key) {
-		// Obtener connectionId del store activo
-		let currentConnectionId;
-		activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-
 		return this.post(`/api/tables/${encodeURIComponent(tableName)}/items/delete`, {
 			key,
-			connectionId: currentConnectionId
+			connectionId: this._getConnectionId()
 		});
 	}
 
@@ -303,13 +308,17 @@ class DynamoDBApiClient extends ApiClient {
 	 * @returns {Promise<ApiResponse>} Resultado de la operación
 	 */
 	async deleteTable(tableName) {
-		// Obtener connectionId del store activo
-		let currentConnectionId;
-		activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-
-		return this.post(`/api/tables/${encodeURIComponent(tableName)}/delete`, {
-			connectionId: currentConnectionId
+		const connId = this._getConnectionId();
+		const response = await this.post(`/api/tables/${encodeURIComponent(tableName)}/delete`, {
+			connectionId: connId
 		});
+
+		// Invalidar el cache del esquema si la tabla se eliminó exitosamente
+		if (response.success && connId != null) {
+			invalidateSchema(connId, tableName);
+		}
+
+		return response;
 	}
 
 	/**
@@ -318,11 +327,10 @@ class DynamoDBApiClient extends ApiClient {
 	 * @returns {Promise<ApiResponse>} Resultado de la operación
 	 */
 	async clearTableItems(tableName) {
-		// Obtener connectionId del store activo
-		let currentConnectionId;
-		activeConnectionId.subscribe((id) => (currentConnectionId = id))();
-
-		return this.delete(`/api/tables/${encodeURIComponent(tableName)}/items/clear?connectionId=${currentConnectionId}`);
+		const connId = this._getConnectionId();
+		return this.delete(
+			`/api/tables/${encodeURIComponent(tableName)}/items/clear?connectionId=${connId}`
+		);
 	}
 }
 

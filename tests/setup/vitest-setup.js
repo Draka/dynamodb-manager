@@ -4,12 +4,12 @@
  */
 
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, beforeAll, afterAll, afterEach } from 'vitest';
 
 // Mock de window.matchMedia para theme testing
 Object.defineProperty(window, 'matchMedia', {
 	writable: true,
-	value: vi.fn().mockImplementation(query => ({
+	value: vi.fn().mockImplementation((query) => ({
 		matches: false,
 		media: query,
 		onchange: null,
@@ -17,8 +17,8 @@ Object.defineProperty(window, 'matchMedia', {
 		removeListener: vi.fn(), // deprecated
 		addEventListener: vi.fn(),
 		removeEventListener: vi.fn(),
-		dispatchEvent: vi.fn(),
-	})),
+		dispatchEvent: vi.fn()
+	}))
 });
 
 // Mock de localStorage
@@ -26,7 +26,7 @@ const localStorageMock = {
 	getItem: vi.fn(),
 	setItem: vi.fn(),
 	removeItem: vi.fn(),
-	clear: vi.fn(),
+	clear: vi.fn()
 };
 Object.defineProperty(window, 'localStorage', {
 	value: localStorageMock
@@ -36,9 +36,9 @@ Object.defineProperty(window, 'localStorage', {
 Object.defineProperty(navigator, 'clipboard', {
 	value: {
 		writeText: vi.fn().mockResolvedValue(undefined),
-		readText: vi.fn().mockResolvedValue(''),
+		readText: vi.fn().mockResolvedValue('')
 	},
-	writable: true,
+	writable: true
 });
 
 // Mock de console.error para tests más limpios

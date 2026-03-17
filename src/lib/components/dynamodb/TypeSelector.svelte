@@ -3,7 +3,6 @@
  * Muestra iconos y descripciones para cada tipo
 -->
 <script>
-
 	let {
 		/** @type {string} Tipo seleccionado */
 		value = 'S',
@@ -87,6 +86,7 @@
 		}
 	];
 
+	/** @param {string} typeValue */
 	function selectType(typeValue) {
 		if (disabled || typeValue === value) return;
 		onchange?.(typeValue);
@@ -96,7 +96,7 @@
 
 <div class="space-y-2">
 	<div class="grid grid-cols-2 gap-2 md:grid-cols-5">
-		{#each TYPES as type}
+		{#each TYPES as type (type.value)}
 			<button
 				class="rounded-lg border-2 p-3 text-left transition-all hover:shadow-md {value ===
 				type.value

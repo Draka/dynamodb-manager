@@ -102,8 +102,19 @@
 		"local": "Local",
 		"aws": "AWS"
 	},
+	"tableInfo": {
+		"loadError": "Error cargando información de la tabla",
+		"loadTableError": "Error cargando tabla",
+		"loadInfoError": "Error cargando información",
+		"copiedToClipboard": "Copiado al portapapeles",
+		"copiedToClipboardWithLabel": "{label} copiado al portapapeles",
+		"copyArnToClipboard": "Copiar ARN al portapapeles"
+	},
 	"record": {
-		"actions": "Acciones",
+		"numericColumnAriaLabel": "Columna numérica",
+		"resizeColumnAriaLabel": "Redimensionar columna",
+		"resizeColumnTitle": "Arrastra para redimensionar columna",
+		"actionsTitle": "Acciones",
 		"edit": "Editar registro",
 		"editAriaLabel": "Editar registro",
 		"delete": "Eliminar registro",
@@ -169,7 +180,12 @@
 		"loadingFailed": "Carga fallida",
 		"savingFailed": "Guardado fallido",
 		"deletingFailed": "Eliminación fallida",
-		"unknown": "Error desconocido"
+		"unknown": "Error desconocido",
+		"dismissAriaLabel": "Cerrar error",
+		"network": "Error de Red",
+		"auth": "Error de Autenticación",
+		"dynamodb": "Error de DynamoDB",
+		"validation": "Error de Validación"
 	},
 	"workspace": {
 		"noActiveConnection": "Sin conexión activa",
@@ -182,7 +198,25 @@
 	},
 	"modal": {
 		"newConnection": "Nueva Conexión",
-		"editConnection": "Editar Conexión"
+		"editConnection": "Editar Conexión",
+		"closeAriaLabel": "Cerrar modal"
+	},
+	"tabs": {
+		"closeTabTitle": "Cerrar pestaña"
+	},
+	"aria": {
+		"home": "Inicio",
+		"closeNotification": "Cerrar notificación"
+	},
+	"keyboardShortcuts": {
+		"title": "Atajos de Teclado"
+	},
+	"tableDetails": {
+		"primaryKeyIconAriaLabel": "Icono de clave primaria"
+	},
+	"monacoEditor": {
+		"loadError": "No se pudo cargar el editor avanzado. Usa el editor simple.",
+		"loadErrorTitle": "Error cargando editor avanzado"
 	},
 	"recordEditorAdvanced": {
 		"title": "Editor de Registro",
@@ -200,7 +234,10 @@
 		"clickToStart": "Haz clic en \"Agregar Atributo\" para comenzar",
 		"typesInfo": "Tipos: String (S), Number (N), Boolean (BOOL), List (L), Map (M), Sets (SS/NS/BS)",
 		"unsavedChanges": "Cambios sin guardar",
-		"discardChanges": "¿Descartar cambios sin guardar?"
+		"discardChanges": "¿Descartar cambios sin guardar?",
+		"formatted": "JSON formateado correctamente",
+		"formatError": "Error formateando JSON",
+		"clearContent": "Limpiar contenido"
 	},
 	"jsonView": {
 		"expandedView": "Vista Expandida",
@@ -210,7 +247,10 @@
 		"copyAll": "Copiar Todo",
 		"recordNumber": "Registro #{number}",
 		"noData": "Sin datos JSON",
-		"noRecordsToShow": "No hay registros para mostrar en formato JSON."
+		"noRecordsToShow": "No hay registros para mostrar en formato JSON.",
+		"editRecordTitle": "Editar registro",
+		"deleteRecordTitle": "Eliminar registro",
+		"copyRecordTitle": "Copiar registro"
 	},
 	"queryBuilder": {
 		"title": "Elementos de la tabla",
@@ -236,6 +276,35 @@
 		"enterNumber": "Ingrese un número",
 		"enterValue": "Ingrese el valor",
 		"mustBeValidNumber": "Debe ser un número válido",
-		"accept": "Aceptar"
+		"accept": "Aceptar",
+		"cancelTitle": "Cancelar (Esc)",
+		"acceptTitle": "Aceptar (Enter)"
+	},
+	"jsonEditor": {
+		"formatJson": "Formatear JSON",
+		"copy": "Copiar",
+		"clear": "Limpiar",
+		"error": "Error"
+	},
+	"notifications": {
+		"copiedToClipboard": "Copiado al portapapeles",
+		"copyError": "Error al copiar al portapapeles",
+		"recordDeleted": "Registro eliminado correctamente",
+		"recordSaved": "Registro guardado correctamente",
+		"fieldUpdated": "Campo actualizado correctamente",
+		"deleteError": "Error eliminando registro",
+		"saveError": "Error guardando registro",
+		"updateError": "Error actualizando campo"
+	},
+	"confirmDelete": {
+		"title": "Confirmar eliminación de registro",
+		"message": "¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.",
+		"table": "Tabla:",
+		"primaryKeys": "Claves primarias:",
+		"warning": "⚠️ Esta acción no se puede deshacer",
+		"warningDesc": "El registro será eliminado permanentemente de la tabla.",
+		"cancel": "Cancelar",
+		"delete": "Eliminar registro",
+		"deleting": "Eliminando..."
 	}
 }

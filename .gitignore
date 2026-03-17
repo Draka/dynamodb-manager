@@ -63,3 +63,21 @@ src/lib/paraglide
 *.bak
 *.backup
 *.tmp
+
+# Editor files
+.vscode
+.idea
+
+# AI files
+.chatgpt
+.cursor
+.deepseek
+.grok
+.perplexity
+.sage
+.think
+.vscode-chat
+.vscode-chatgpt
+.vscode-chatgpt-next
+.vscode-chatgpt-next-next
+.claude

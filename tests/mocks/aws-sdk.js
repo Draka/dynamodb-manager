@@ -93,7 +93,7 @@ export const awsTestHelpers = {
 	 * Reset de mocks
 	 */
 	reset: () => {
-		Object.values(mockConfigService).forEach(mock => {
+		Object.values(mockConfigService).forEach((mock) => {
 			if (typeof mock === 'function') {
 				mock.mockClear();
 			}

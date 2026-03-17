@@ -25,7 +25,7 @@ function loadConnections() {
 		if (!stored) return [];
 
 		const connections = JSON.parse(stored);
-		return connections.map((conn) => ({
+		return connections.map((/** @type {AWSConnection} */ conn) => ({
 			...conn,
 			createdAt: new Date(conn.createdAt),
 			lastUsed: new Date(conn.lastUsed)
@@ -129,6 +129,7 @@ export function clearConnections() {
  * @returns {string} JSON con las conexiones
  */
 export function exportConnections() {
+	/** @type {AWSConnection[]} */
 	let current = [];
 	const unsubscribe = connections.subscribe((value) => (current = value));
 	unsubscribe();

@@ -18,7 +18,6 @@
 		Search,
 		CircleCheck,
 		Key,
-		Database,
 		HardDrive,
 		Eraser
 	} from 'lucide-svelte';
@@ -90,12 +89,12 @@
 				// Cargar detalles básicos para las primeras tablas
 				loadTableDetailsInBackground(response.data.slice(0, 5));
 			} else {
-				const errorMsg = response.error || m["errors.unknown"]();
+				const errorMsg = response.error || m['errors.unknown']();
 				updateConnectionTables($activeConnectionId, [], false, errorMsg);
 				console.error('Error en respuesta de tablas:', response.error);
 			}
 		} catch (/** @type {any} */ err) {
-			const errorMsg = m["errors.loadingFailed"]({ message: err.message });
+			const errorMsg = m['errors.loadingFailed']({ message: err.message });
 			updateConnectionTables($activeConnectionId, [], false, errorMsg);
 			console.error('Error cargando tablas:', err);
 		}
@@ -210,11 +209,11 @@
 				closeDeleteModal();
 			} else {
 				console.error(`❌ Error eliminando tabla: ${response.error}`);
-				alert(m["errors.deletingFailed"]({ message: response.error }));
+				alert(m['errors.deletingFailed']({ message: response.error }));
 			}
 		} catch (/** @type {any} */ error) {
 			console.error('Error eliminando tabla:', error);
-			alert(m["errors.deletingFailed"]({ message: error.message }));
+			alert(m['errors.deletingFailed']({ message: error.message }));
 		}
 	}
 
@@ -253,7 +252,9 @@
 			const response = await dynamoDbApi.clearTableItems(clearItemsModal.tableName);
 
 			if (response.success) {
-				const message = response.message || m["tableExplorer.recordsDeletedSuccess"]();
+				const message =
+					(response && typeof response === 'object' && 'message' in response && response.message) ||
+					m['tableExplorer.recordsDeletedSuccess']();
 				alert(message);
 				closeClearItemsModal();
 
@@ -276,11 +277,11 @@
 				}
 			} else {
 				console.error(`❌ Error limpiando registros: ${response.error}`);
-				alert(m["errors.deletingFailed"]({ message: response.error }));
+				alert(m['errors.deletingFailed']({ message: response.error }));
 			}
 		} catch (/** @type {any} */ error) {
 			console.error('Error limpiando registros:', error);
-			alert(m["errors.deletingFailed"]({ message: error.message }));
+			alert(m['errors.deletingFailed']({ message: error.message }));
 		} finally {
 			clearItemsModal.isProcessing = false;
 		}
@@ -377,7 +378,7 @@
 	<!-- Header con búsqueda -->
 	<div class="flex items-center gap-2 p-2">
 		<div class="flex-1">
-			<TextInput bind:value={searchTerm} placeholder={m["table.search"]()} />
+			<TextInput bind:value={searchTerm} placeholder={m['table.search']()} />
 		</div>
 
 		<Button
@@ -386,10 +387,10 @@
 			onclick={refreshTables}
 			disabled={tablesLoading || !connection}
 			loading={tablesLoading}
-			title={m["table.refresh"]()}
+			title={m['table.refresh']()}
 		>
 			<RefreshCw size={16} />
-			<span class="sr-only">{m["table.refresh"]()}</span>
+			<span class="sr-only">{m['table.refresh']()}</span>
 		</Button>
 	</div>
 
@@ -397,47 +398,55 @@
 	{#if !connection}
 		<div class="py-12 text-center">
 			<Lock size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["table.noConnection"]()}</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+				{m['table.noConnection']()}
+			</h3>
 			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-				{m["table.selectConnection"]()}
+				{m['table.selectConnection']()}
 			</p>
 		</div>
 	{:else if tablesLoading}
 		<!-- Estado de carga -->
 		<div class="py-12 text-center">
-			<LoadingSpinner size="lg" text={m["table.loading"]()} center />
+			<LoadingSpinner size="lg" text={m['table.loading']()} center />
 		</div>
 	{:else if tablesError}
 		<!-- Estado de error -->
 		<div class="py-12 text-center">
 			<AlertTriangle size={48} class="mx-auto text-red-400" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["table.errorLoading"]()}</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+				{m['table.errorLoading']()}
+			</h3>
 			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{tablesError}</p>
 			<div class="mt-6">
-				<Button variant="primary" onclick={refreshTables}>{m["table.retry"]()}</Button>
+				<Button variant="primary" onclick={refreshTables}>{m['table.retry']()}</Button>
 			</div>
 		</div>
 	{:else if filteredTables.length === 0 && tables.length === 0}
 		<!-- Sin tablas -->
 		<div class="py-12 text-center">
 			<Table size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["table.noTables"]()}</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{m["table.noTablesFound"]()}</p>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+				{m['table.noTables']()}
+			</h3>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{m['table.noTablesFound']()}</p>
 		</div>
 	{:else if filteredTables.length === 0}
 		<!-- Sin resultados de búsqueda -->
 		<div class="py-12 text-center">
 			<Search size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
-			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{m["table.noResults"]()}</h3>
+			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+				{m['table.noResults']()}
+			</h3>
 			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-				{m["table.noResultsFor"]({ search: searchTerm })}
+				{m['table.noResultsFor']({ search: searchTerm })}
 			</p>
 		</div>
 	{:else}
 		<!-- Lista de tablas -->
 		<div class="flex-1 space-y-2 overflow-y-auto p-2">
 			<div class="mb-3 text-sm text-gray-500 dark:text-gray-400">
-				{m["table.showing"]({ filtered: filteredTables.length, total: tables.length })}
+				{m['table.showing']({ count: filteredTables.length, total: tables.length })}
 			</div>
 
 			{#each filteredTables as tableName (tableName)}
@@ -447,7 +456,9 @@
 				{@const isSelected = selectedTable === tableName}
 
 				<div
-					class="group relative cursor-pointer rounded-lg border p-4 transition-all duration-200 hover:border-blue-300 hover:shadow-sm dark:hover:border-blue-400 {isSelected ? 'border-4 border-blue-600 bg-blue-100 dark:border-blue-500 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'}"
+					class="group relative cursor-pointer rounded-lg border p-4 transition-all duration-200 hover:border-blue-300 hover:shadow-sm dark:hover:border-blue-400 {isSelected
+						? 'border-4 border-blue-600 bg-blue-100 dark:border-blue-500 dark:bg-blue-900/20'
+						: 'border-gray-200 dark:border-gray-700'}"
 					onclick={() => selectTable(tableName)}
 					role="button"
 					tabindex="0"
@@ -468,10 +479,10 @@
 									e.stopPropagation();
 									openClearItemsModal(tableName);
 								}}
-								title={m["table.clearItems"]()}
+								title={m['table.clearItems']()}
 							>
 								<Eraser size={12} />
-								<span class="sr-only">{m["table.clearItems"]()}</span>
+								<span class="sr-only">{m['table.clearItems']()}</span>
 							</button>
 
 							<!-- Botón de eliminar tabla -->
@@ -481,10 +492,10 @@
 									e.stopPropagation();
 									openDeleteModal(tableName);
 								}}
-								title={m["table.deleteTable"]()}
+								title={m['table.deleteTable']()}
 							>
 								<Trash2 size={12} />
-								<span class="sr-only">{m["table.deleteTable"]()}</span>
+								<span class="sr-only">{m['table.deleteTable']()}</span>
 							</button>
 						</div>
 						<div class="min-w-0 flex-1">
@@ -509,7 +520,7 @@
 							{#if isLoadingDetails}
 								<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
 									<LoadingSpinner size="sm" />
-									<span>{m["table.loadingDetails"]()}</span>
+									<span>{m['table.loadingDetails']()}</span>
 								</div>
 							{:else if details}
 								<div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
@@ -519,7 +530,9 @@
 											<div class="flex items-center gap-1">
 												<Key size={16} />
 												<span
-													>{m["table.pk"]()}: <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700">{keys.hashKey}</code
+													>{m['table.pk']()}:
+													<code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700"
+														>{keys.hashKey}</code
 													></span
 												>
 											</div>
@@ -527,7 +540,8 @@
 											{#if keys.rangeKey}
 												<div class="flex items-center gap-1">
 													<span
-														>{m["table.sk"]()}: <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700"
+														>{m['table.sk']()}:
+														<code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700"
 															>{keys.rangeKey}</code
 														></span
 													>
@@ -541,7 +555,7 @@
 										{#if details.ItemCount !== undefined}
 											<div class="flex items-center gap-1">
 												<Table size={16} />
-												<span>{formatItemCount(details.ItemCount)} {m["table.items"]()}</span>
+												<span>{formatItemCount(details.ItemCount)} {m['table.items']()}</span>
 											</div>
 										{/if}
 
@@ -554,7 +568,9 @@
 									</div>
 								</div>
 							{:else}
-								<div class="text-sm text-gray-500 dark:text-gray-400">{m["table.clickToLoad"]()}</div>
+								<div class="text-sm text-gray-500 dark:text-gray-400">
+									{m['table.clickToLoad']()}
+								</div>
 							{/if}
 						</div>
 
@@ -583,17 +599,17 @@
 
 <!-- Modal de confirmación para limpiar registros -->
 {#if clearItemsModal.isOpen}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+	<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
 		<div class="max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
 			<div class="mb-4">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-					{m["tableExplorer.confirmClearItems"]()}
+					{m['tableExplorer.confirmClearItems']()}
 				</h3>
 				<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-					{m["tableExplorer.confirmClearItemsDesc"]({ tableName: clearItemsModal.tableName })}
+					{m['tableExplorer.confirmClearItemsDesc']({ tableName: clearItemsModal.tableName })}
 				</p>
 				<p class="mt-2 text-sm text-red-600 dark:text-red-400">
-					{m["tableExplorer.confirmClearItemsWarning"]()}
+					{m['tableExplorer.confirmClearItemsWarning']()}
 				</p>
 			</div>
 
@@ -603,7 +619,7 @@
 					onclick={closeClearItemsModal}
 					disabled={clearItemsModal.isProcessing}
 				>
-					{m["button.cancel"]()}
+					{m['button.cancel']()}
 				</Button>
 				<Button
 					variant="destructive"
@@ -611,7 +627,9 @@
 					disabled={clearItemsModal.isProcessing}
 					loading={clearItemsModal.isProcessing}
 				>
-					{clearItemsModal.isProcessing ? m["tableExplorer.deleting"]() : m["tableExplorer.deleteAll"]()}
+					{clearItemsModal.isProcessing
+						? m['tableExplorer.deleting']()
+						: m['tableExplorer.deleteAll']()}
 				</Button>
 			</div>
 		</div>

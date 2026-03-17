@@ -132,18 +132,19 @@ export function validateJSON(jsonString) {
 	try {
 		JSON.parse(jsonString);
 		return null;
-	} catch (error) {
-		return `JSON inválido: ${error.message}`;
+	} catch (/** @type {unknown} */ error) {
+		return `JSON inválido: ${error instanceof Error ? error.message : String(error)}`;
 	}
 }
 
 /**
  * Valida un objeto usando múltiples validadores
- * @param {Object} data - Datos a validar
- * @param {Object} rules - Reglas de validación
- * @returns {Object} Objeto con errores por campo
+ * @param {Record<string, any>} data - Datos a validar
+ * @param {Record<string, Array<(v: any) => string | null>>} rules - Reglas de validación
+ * @returns {Record<string, string>} Objeto con errores por campo
  */
 export function validateObject(data, rules) {
+	/** @type {Record<string, string>} */
 	const errors = {};
 
 	for (const [field, fieldRules] of Object.entries(rules)) {
