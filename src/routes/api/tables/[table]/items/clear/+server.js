@@ -59,12 +59,22 @@ export async function DELETE({ params, url }) {
 
 		// Escanear y borrar en lotes
 		do {
-			// Escanear la tabla para obtener items
-			/** @type {{ TableName: string; ProjectionExpression: string; Limit: number; ExclusiveStartKey?: Record<string, any> }} */
+			// Usar ExpressionAttributeNames para evitar conflictos con palabras reservadas
+			// (ej: "date", "name", "status", "type", etc. son reservadas en DynamoDB)
+			/** @type {Record<string, string>} */
+			const expressionNames = { '#hk': hashKey };
+			let projectionExpr = '#hk';
+			if (rangeKey) {
+				expressionNames['#rk'] = rangeKey;
+				projectionExpr += ', #rk';
+			}
+
+			/** @type {any} */
 			const scanParams = {
 				TableName: tableName,
-				ProjectionExpression: rangeKey ? `${hashKey}, ${rangeKey}` : hashKey,
-				Limit: 100, // Escanear más items para procesar en lotes más eficientemente
+				ProjectionExpression: projectionExpr,
+				ExpressionAttributeNames: expressionNames,
+				Limit: 100,
 				...(lastEvaluatedKey && { ExclusiveStartKey: lastEvaluatedKey })
 			};
 

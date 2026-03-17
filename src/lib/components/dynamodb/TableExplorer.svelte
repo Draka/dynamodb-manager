@@ -606,7 +606,7 @@
 					{m['tableExplorer.confirmClearItems']()}
 				</h3>
 				<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-					{m['tableExplorer.confirmClearItemsDesc']({ tableName: clearItemsModal.tableName })}
+					{@html m['tableExplorer.confirmClearItemsDesc']({ tableName: clearItemsModal.tableName })}
 				</p>
 				<p class="mt-2 text-sm text-red-600 dark:text-red-400">
 					{m['tableExplorer.confirmClearItemsWarning']()}
