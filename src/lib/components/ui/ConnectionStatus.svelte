@@ -40,7 +40,7 @@
 			case 'disconnected':
 				return 'text-red-500';
 			default:
-				return 'text-gray-400';
+				return 'text-gray-500';
 		}
 	}
 

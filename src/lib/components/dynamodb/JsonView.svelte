@@ -173,7 +173,7 @@
 						</span>
 
 						{#if compactView}
-							<span class="max-w-md truncate text-xs text-gray-500 dark:text-gray-400">
+							<span class="max-w-md truncate text-xs text-gray-500 dark:text-gray-300">
 								{getRecordPreview(record)}
 							</span>
 						{/if}
@@ -183,7 +183,7 @@
 						{#if onEditRecord}
 							<button
 								type="button"
-								class="text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+								class="text-gray-500 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
 								onclick={(e) => {
 									e.stopPropagation();
 									onEditRecord?.(record);
@@ -198,7 +198,7 @@
 						{#if onDeleteRecord}
 							<button
 								type="button"
-								class="text-gray-400 transition-colors hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400"
+								class="text-gray-500 transition-colors hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400"
 								onclick={(e) => {
 									e.stopPropagation();
 									onDeleteRecord?.(record);
@@ -219,7 +219,7 @@
 
 						<button
 							type="button"
-							class="text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+							class="text-gray-500 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
 							onclick={(e) => {
 								e.stopPropagation();
 								copyRecord(record);
@@ -232,7 +232,7 @@
 
 						<ChevronDown
 							size={16}
-							class="transform text-gray-400 transition-transform dark:text-gray-500 {selectedRecord ===
+							class="transform text-gray-500 transition-transform dark:text-gray-500 {selectedRecord ===
 							index
 								? 'rotate-180'
 								: ''}"
@@ -257,9 +257,9 @@
 	<!-- Estado vacío -->
 	{#if records.length === 0}
 		<div class="py-12 text-center">
-			<FileText size={48} class="mx-auto text-gray-400" />
+			<FileText size={48} class="mx-auto text-gray-500" />
 			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin datos JSON</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">
 				No hay registros para mostrar en formato JSON.
 			</p>
 		</div>

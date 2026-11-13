@@ -41,7 +41,7 @@
 
 	/** Clases base del input */
 	const baseClasses =
-		'block w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors text-gray-900 dark:text-white bg-white dark:bg-gray-800';
+		'block w-full px-3 py-2 border rounded-md text-sm placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors text-gray-900 dark:text-white bg-white dark:bg-gray-800';
 
 	/** Clases según estado del input */
 	const stateClasses = $derived(() => {
@@ -114,6 +114,6 @@
 			{error}
 		</p>
 	{:else if help}
-		<p class="text-sm text-gray-500 dark:text-gray-400">{help}</p>
+		<p class="text-sm text-gray-500 dark:text-gray-300">{help}</p>
 	{/if}
 </div>

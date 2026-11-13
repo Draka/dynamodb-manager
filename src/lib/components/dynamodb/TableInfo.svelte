@@ -164,7 +164,7 @@
 	 * @param {boolean} enabled
 	 */
 	function getStatusColor(enabled) {
-		return enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400';
+		return enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-300';
 	}
 
 	/**
@@ -452,7 +452,7 @@
 									</div>
 
 									{#if stats.examples.length > 0}
-										<div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+										<div class="mt-2 text-xs text-gray-500 dark:text-gray-300">
 											<span class="font-medium">Ejemplos:</span>
 											{#each stats.examples as example, i (i)}
 												<span class="font-mono">
@@ -485,7 +485,7 @@
 				class="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800"
 			>
 				<div class="text-center">
-					<BarChart3 size={48} class="mx-auto mb-3 text-gray-400 dark:text-gray-500" />
+					<BarChart3 size={48} class="mx-auto mb-3 text-gray-500 dark:text-gray-500" />
 					<h4 class="text-md mb-2 font-medium text-gray-900 dark:text-white">
 						📊 Sin Datos para Análisis
 					</h4>
@@ -659,11 +659,11 @@
 		</div>
 	{:else}
 		<div class="py-12 text-center">
-			<div class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-600">
+			<div class="mx-auto mb-4 h-12 w-12 text-gray-500 dark:text-gray-600">
 				<FileText size={48} />
 			</div>
 			<h3 class="text-lg font-medium text-gray-900 dark:text-white">Selecciona una tabla</h3>
-			<p class="text-gray-600 dark:text-gray-400">
+			<p class="text-gray-600 dark:text-gray-300">
 				Elige una tabla para ver su información avanzada
 			</p>
 		</div>

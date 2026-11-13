@@ -135,7 +135,7 @@
 					oninput={handleInput}
 					onkeydown={handleKeydown}
 					placeholder="Ingrese un número"
-					class="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 {!isValid
+					class="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 {!isValid
 						? 'border-red-500 dark:border-red-400'
 						: 'border-gray-300 dark:border-gray-600'}"
 				/>
@@ -147,7 +147,7 @@
 					oninput={handleInput}
 					onkeydown={handleKeydown}
 					placeholder="Ingrese el valor"
-					class="w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+					class="w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
 				/>
 			{/if}
 

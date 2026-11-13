@@ -800,9 +800,9 @@
 										>
 											{m['recordEditorAdvanced.value']()}
 											{#if ['L', 'M'].includes(attr.type)}
-												<span class="text-xs text-gray-500 dark:text-gray-400">(JSON)</span>
+												<span class="text-xs text-gray-500 dark:text-gray-300">(JSON)</span>
 											{:else if ['SS', 'NS', 'BS'].includes(attr.type)}
-												<span class="text-xs text-gray-500 dark:text-gray-400"
+												<span class="text-xs text-gray-500 dark:text-gray-300"
 													>(separado por comas)</span
 												>
 											{/if}
@@ -872,8 +872,8 @@
 						{/each}
 
 						{#if attributes.length === 0}
-							<div class="py-8 text-center text-gray-500 dark:text-gray-400">
-								<Type size={48} class="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+							<div class="py-8 text-center text-gray-500 dark:text-gray-300">
+								<Type size={48} class="mx-auto mb-4 text-gray-500 dark:text-gray-500" />
 								<p>{m['recordEditorAdvanced.noAttributes']()}</p>
 								<p class="text-sm">
 									Haz clic en "{m['recordEditorAdvanced.addAttribute']()}" para comenzar

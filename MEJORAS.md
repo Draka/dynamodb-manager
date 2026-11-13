@@ -58,7 +58,7 @@
 
 ### Prioridad Alta
 
-- [ ] **Contraste WCAG** — `text-gray-400` sobre `bg-gray-50` (~2.5:1) no cumple AA (4.5:1). Auditar con Lighthouse/axe. Minimo `text-gray-600` claro / `text-gray-300` oscuro.
+- [x] **Contraste WCAG** — `text-gray-400` → `text-gray-500` claro / `dark:text-gray-400` → `dark:text-gray-300` oscuro en todos los componentes
 - [ ] **Tests unitarios criticos**
   - [ ] `dynamodb-service.js` — Mock AWS SDK, metodos CRUD
   - [ ] `api-client.js` — Mock fetch, manejo errores
@@ -67,10 +67,10 @@
 
 ### Prioridad Media
 
-- [ ] **Importar datos** — Importar desde CSV/JSON (actualmente solo exporta)
-- [ ] **Busqueda multi-campo** — Multiples filtros simultaneos en RecordViewer
-- [ ] **Historial de queries** — Queries recientes en QueryBuilder
-- [ ] **Lazy loading** — Cargar DynamoDBRecordEditor, JsonEditor, TableInfo bajo demanda
+- [x] **Importar datos** — CSV/JSON con auto-deteccion de tipos y upload por lotes
+- [x] **Busqueda multi-campo** — Multiples filtros simultaneos con AND en RecordViewer
+- [x] **Historial de queries** — Store persistente con localStorage, re-ejecutar queries previas
+- [x] **Lazy loading** — Dynamic imports con {#await} para RecordViewer, QueryBuilder, TableDetails, TableInfo
 - [ ] **Encriptacion credenciales** — Electron `safeStorage` / Web Crypto API
 
 ### Prioridad Baja

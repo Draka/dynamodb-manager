@@ -190,7 +190,7 @@
 					{#if closable}
 						<button
 							type="button"
-							class="flex h-10 w-10 items-center justify-center rounded-md text-gray-400 hover:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-blue-400"
+							class="flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-blue-400"
 							onclick={closeModal}
 							aria-label={m['modal.closeAriaLabel']()}
 						>

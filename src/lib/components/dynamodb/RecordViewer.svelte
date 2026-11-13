@@ -18,11 +18,13 @@
 		RefreshCw,
 		AlertTriangle,
 		Download,
+		Upload,
 		Archive,
 		ChevronLeft,
 		ChevronRight,
 		Loader
 	} from 'lucide-svelte';
+	import { notifySuccess, notifyError } from '../../stores/notifications.js';
 	import * as m from '$lib/paraglide/messages.js';
 
 	/**
@@ -69,10 +71,14 @@
 		{ value: '100', label: '100 items' }
 	];
 
-	/** Filtros de búsqueda */
-	let searchTerm = $state('');
-	let searchField = $state('');
-	let searchOperator = $state('contains');
+	/**
+	 * @typedef {{ field: string, operator: string, value: string }} SearchFilter
+	 */
+
+	/** Filtros de búsqueda multi-campo */
+	let searchFilters = $state(/** @type {SearchFilter[]} */ ([
+		{ field: '', operator: 'contains', value: '' }
+	]));
 
 	/** Operadores de búsqueda disponibles */
 	const searchOperators = [
@@ -85,6 +91,25 @@
 		{ value: '>=', label: 'Mayor o igual' },
 		{ value: '<=', label: 'Menor o igual' }
 	];
+
+	/** Agregar un filtro nuevo */
+	function addFilter() {
+		searchFilters.push({ field: '', operator: 'contains', value: '' });
+	}
+
+	/**
+	 * Eliminar un filtro
+	 * @param {number} index
+	 */
+	function removeFilter(index) {
+		searchFilters.splice(index, 1);
+		if (searchFilters.length === 0) {
+			searchFilters.push({ field: '', operator: 'contains', value: '' });
+		}
+	}
+
+	/** Verificar si hay filtros activos (con campo y valor) */
+	let hasActiveFilters = $derived(searchFilters.some((f) => f.field && f.value));
 
 	/**
 	 * Realiza un scan de la tabla usando API client
@@ -112,20 +137,34 @@
 				...(startKey && { lastEvaluatedKey: startKey })
 			};
 
-			// Agregar filtro si hay búsqueda
-			if (searchTerm && searchField && searchOperator) {
-				params.expressionAttributeNames = { '#field': searchField };
-				params.expressionAttributeValues = { ':searchTerm': searchTerm };
+			// Construir filtro multi-campo
+			const activeFilters = searchFilters.filter((f) => f.field && f.value);
+			if (activeFilters.length > 0) {
+				/** @type {Record<string, string>} */
+				const exprNames = {};
+				/** @type {Record<string, string>} */
+				const exprValues = {};
+				/** @type {string[]} */
+				const conditions = [];
 
-				// Construir expresión según el operador
-				if (searchOperator === 'contains') {
-					params.filterExpression = `contains(#field, :searchTerm)`;
-				} else if (searchOperator === 'begins_with') {
-					params.filterExpression = `begins_with(#field, :searchTerm)`;
-				} else {
-					// Operadores de comparación (=, <>, <, >, <=, >=)
-					params.filterExpression = `#field ${searchOperator} :searchTerm`;
-				}
+				activeFilters.forEach((f, i) => {
+					const fieldAlias = `#f${i}`;
+					const valueAlias = `:v${i}`;
+					exprNames[fieldAlias] = f.field;
+					exprValues[valueAlias] = f.value;
+
+					if (f.operator === 'contains') {
+						conditions.push(`contains(${fieldAlias}, ${valueAlias})`);
+					} else if (f.operator === 'begins_with') {
+						conditions.push(`begins_with(${fieldAlias}, ${valueAlias})`);
+					} else {
+						conditions.push(`${fieldAlias} ${f.operator} ${valueAlias}`);
+					}
+				});
+
+				params.expressionAttributeNames = exprNames;
+				params.expressionAttributeValues = exprValues;
+				params.filterExpression = conditions.join(' AND ');
 			}
 
 			const response = await dynamoDbApi.scanTable(tableName, params);
@@ -210,11 +249,12 @@
 	const debouncedSearch = debounce(handleSearch, 500);
 
 	/**
-	 * Auto-búsqueda con debounce cuando cambia el término de búsqueda
+	 * Auto-búsqueda con debounce cuando cambian los filtros
 	 */
 	$effect(() => {
-		// Solo ejecutar si hay término de búsqueda y campo seleccionado
-		if (searchTerm && searchField) {
+		// Acceder a los filtros para trackear cambios
+		const active = searchFilters.some((f) => f.field && f.value);
+		if (active) {
 			debouncedSearch();
 		}
 	});
@@ -239,8 +279,7 @@
 	 * Limpia la búsqueda
 	 */
 	async function clearSearch() {
-		searchTerm = '';
-		searchField = '';
+		searchFilters = [{ field: '', operator: 'contains', value: '' }];
 		await handleSearch();
 	}
 
@@ -265,16 +304,40 @@
 	 * Maneja el guardado de un registro editado
 	 * @param {Object} updatedRecord - Registro actualizado
 	 */
-	function handleRecordSaved(updatedRecord) {
+	async function handleRecordSaved(updatedRecord) {
 		// Actualizar el registro en la lista local
 		const recordIndex = records.findIndex(
 			(r) => JSON.stringify(r) === JSON.stringify(editingRecord)
 		);
 
+		// Normalizar posibles AttributeValues nativos a JS plano
+		/** @type {any} */
+		const normalized = normalizeToPlain(updatedRecord);
+
+		// Si cambió la clave primaria, el putItem del editor escribió un registro
+		// NUEVO bajo la clave nueva; hay que eliminar el original para no dejar
+		// un duplicado. Solo se hace con el esquema real de la tabla (nunca con
+		// la heurística de extractKeys, que podría borrar de más).
+		if (editingRecord && tableSchema?.KeySchema) {
+			const oldKeys = extractKeys(editingRecord);
+			const newKeys = extractKeys(normalized);
+			const keyChanged =
+				Object.keys(oldKeys).length > 0 &&
+				JSON.stringify(oldKeys) !== JSON.stringify(newKeys);
+
+			if (keyChanged) {
+				try {
+					await dynamoDbApi.deleteItem(tableName, oldKeys);
+				} catch (/** @type {any} */ error) {
+					console.error('Error eliminando el registro original tras cambiar la clave:', error);
+					alert(
+						`El registro se guardó con la clave nueva, pero no se pudo eliminar el original: ${error.message}`
+					);
+				}
+			}
+		}
+
 		if (recordIndex !== -1) {
-			// Normalizar posibles AttributeValues nativos a JS plano
-			/** @type {any} */
-			const normalized = normalizeToPlain(updatedRecord);
 			records[recordIndex] = /** @type {Record} */ (normalized);
 		}
 
@@ -465,6 +528,18 @@
 	async function handleUpdateField(record, field, value) {
 		if (!$isConnected || !tableName) return;
 
+		// Nunca editar claves primarias inline: putItem con una clave distinta
+		// crea un registro nuevo y deja el original duplicado. La UI ya oculta
+		// el botón en columnas de clave; esto es una defensa adicional.
+		const keyAttributeNames =
+			tableSchema?.KeySchema?.map(
+				(/** @type {{ AttributeName: string }} */ k) => k.AttributeName
+			) ?? [];
+		if (keyAttributeNames.includes(field)) {
+			console.warn(`Edición inline de la clave "${field}" bloqueada; usa el editor completo.`);
+			return;
+		}
+
 		try {
 			// Crear el registro actualizado completo
 			const updatedRecord = {
@@ -562,6 +637,117 @@
 		}
 	});
 
+	// ── Importar datos CSV/JSON ──
+
+	/** @type {HTMLInputElement | null} */
+	let fileInput = $state(null);
+	let importing = $state(false);
+	let importProgress = $state({ current: 0, total: 0 });
+
+	/**
+	 * Abre el diálogo de selección de archivo
+	 */
+	function openImportDialog() {
+		fileInput?.click();
+	}
+
+	/**
+	 * Parsea CSV a array de objetos
+	 * @param {string} csvText - Contenido CSV
+	 * @returns {Object[]} Array de objetos
+	 */
+	function parseCSV(csvText) {
+		const lines = csvText.split('\n').filter((l) => l.trim());
+		if (lines.length < 2) return [];
+
+		// Detectar separador (coma o punto y coma)
+		const sep = lines[0].includes(';') ? ';' : ',';
+		const headers = lines[0].split(sep).map((h) => h.trim().replace(/^"|"$/g, ''));
+
+		return lines.slice(1).map((line) => {
+			const values = line.split(sep).map((v) => v.trim().replace(/^"|"$/g, ''));
+			/** @type {Record<string, any>} */
+			const obj = {};
+			headers.forEach((header, i) => {
+				const val = values[i] ?? '';
+				// Auto-detectar tipos
+				if (val === 'true' || val === 'false') {
+					obj[header] = val === 'true';
+				} else if (val !== '' && !isNaN(Number(val))) {
+					obj[header] = Number(val);
+				} else {
+					obj[header] = val;
+				}
+			});
+			return obj;
+		});
+	}
+
+	/**
+	 * Maneja la importación de archivo
+	 * @param {Event} event
+	 */
+	async function handleFileImport(event) {
+		const target = /** @type {HTMLInputElement} */ (event.target);
+		const file = target.files?.[0];
+		if (!file || !tableName) return;
+
+		importing = true;
+		importProgress = { current: 0, total: 0 };
+
+		try {
+			const text = await file.text();
+			/** @type {Object[]} */
+			let items = [];
+
+			if (file.name.endsWith('.json')) {
+				const parsed = JSON.parse(text);
+				items = Array.isArray(parsed) ? parsed : [parsed];
+			} else if (file.name.endsWith('.csv')) {
+				items = parseCSV(text);
+			} else {
+				throw new Error('Formato no soportado. Use .json o .csv');
+			}
+
+			if (items.length === 0) {
+				throw new Error('No se encontraron registros en el archivo');
+			}
+
+			importProgress.total = items.length;
+			let successCount = 0;
+			let errorCount = 0;
+
+			// Insertar en lotes de 5 para no saturar
+			for (let i = 0; i < items.length; i++) {
+				try {
+					const response = await dynamoDbApi.putItem(tableName, items[i]);
+					if (response.success) {
+						successCount++;
+					} else {
+						errorCount++;
+					}
+				} catch {
+					errorCount++;
+				}
+				importProgress.current = i + 1;
+			}
+
+			if (errorCount > 0) {
+				notifyError(`Importados ${successCount}/${items.length} registros (${errorCount} errores)`);
+			} else {
+				notifySuccess(`${successCount} registros importados correctamente`);
+			}
+
+			// Recargar datos
+			await refreshData();
+		} catch (/** @type {any} */ err) {
+			notifyError(`Error importando: ${err.message}`);
+		} finally {
+			importing = false;
+			target.value = ''; // Reset file input
+		}
+	}
+
 	/**
 	 * Carga el esquema de la tabla para extraer claves correctamente
 	 */
@@ -612,6 +798,24 @@
 				</button>
 			</div>
 
+			<!-- Importar -->
+			<input
+				type="file"
+				accept=".json,.csv"
+				class="hidden"
+				bind:this={fileInput}
+				onchange={handleFileImport}
+			/>
+			<Button variant="secondary" size="sm" onclick={openImportDialog} disabled={importing}>
+				{#if importing}
+					<Loader size={16} class="mr-2 animate-spin" />
+					{importProgress.current}/{importProgress.total}
+				{:else}
+					<Upload size={16} class="mr-2" />
+					Importar
+				{/if}
+			</Button>
+
 			<!-- Exportar -->
 			<Button variant="secondary" size="sm" onclick={exportToJson} disabled={records.length === 0}>
 				<Download size={16} class="mr-2" />
@@ -626,49 +830,94 @@
 		</div>
 	</div>
 
-	<!-- Filtros de búsqueda -->
+	<!-- Filtros de búsqueda multi-campo -->
 	<div
 		class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
 	>
-		<div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-			<!-- Campo -->
-			<div class="flex-1">
-				<Select
-					id="recordviewer-search-field"
-					label="Campo"
-					bind:value={searchField}
-					options={availableFields}
-					placeholder={m['recordViewer.searchField']()}
-				/>
-			</div>
+		<div class="space-y-2">
+			{#each searchFilters as filter, i}
+				<div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+					<!-- Campo -->
+					<div class="flex-1">
+						{#if i === 0}
+							<label
+								for="search-field-0"
+								class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300"
+							>
+								Campo
+							</label>
+						{/if}
+						<Select
+							id={"search-field-" + i}
+							bind:value={filter.field}
+							options={availableFields}
+							placeholder={m['recordViewer.searchField']()}
+						/>
+					</div>
 
-			<!-- Operador -->
-			<div class="sm:w-40">
-				<Select
-					id="recordviewer-search-operator"
-					label="Operador"
-					bind:value={searchOperator}
-					options={searchOperators}
-				/>
-			</div>
+					<!-- Operador -->
+					<div class="sm:w-36">
+						{#if i === 0}
+							<label
+								for="search-operator-0"
+								class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300"
+							>
+								Operador
+							</label>
+						{/if}
+						<Select
+							id={"search-operator-" + i}
+							bind:value={filter.operator}
+							options={searchOperators}
+						/>
+					</div>
 
-			<!-- Valor -->
-			<div class="flex-1">
-				<TextInput
-					id="recordviewer-search-value"
-					label="Valor"
-					bind:value={searchTerm}
-					placeholder={m['recordViewer.search']()}
-				/>
-			</div>
+					<!-- Valor -->
+					<div class="flex-1">
+						{#if i === 0}
+							<label
+								for="search-value-0"
+								class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300"
+							>
+								Valor
+							</label>
+						{/if}
+						<TextInput
+							id={"search-value-" + i}
+							bind:value={filter.value}
+							placeholder={m['recordViewer.search']()}
+						/>
+					</div>
 
-			<!-- Botones -->
+					<!-- Botón quitar filtro -->
+					<button
+						type="button"
+						class="flex-shrink-0 rounded p-1.5 text-gray-500 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+						onclick={() => removeFilter(i)}
+						title="Quitar filtro"
+					>
+						✕
+					</button>
+				</div>
+			{/each}
+		</div>
+
+		<!-- Acciones de filtro -->
+		<div class="mt-3 flex items-center justify-between">
+			<button
+				type="button"
+				class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+				onclick={addFilter}
+			>
+				+ Agregar filtro
+			</button>
+
 			<div class="flex gap-2">
 				<Button
 					variant="primary"
 					size="sm"
 					onclick={handleSearch}
-					disabled={!searchTerm || !searchField || loading}
+					disabled={!hasActiveFilters || loading}
 				>
 					Buscar
 				</Button>
@@ -698,12 +947,12 @@
 		</div>
 	{:else if records.length === 0}
 		<div class="py-12 text-center">
-			<Archive size={48} class="mx-auto text-gray-400" />
+			<Archive size={48} class="mx-auto text-gray-500" />
 			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
 				{m['recordViewer.noRecords']()}
 			</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-				{searchTerm ? m['recordViewer.noRecordsFound']() : m['recordViewer.emptyTable']()}
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">
+				{hasActiveFilters ? m['recordViewer.noRecordsFound']() : m['recordViewer.emptyTable']()}
 			</p>
 		</div>
 	{:else}

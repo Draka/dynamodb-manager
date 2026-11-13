@@ -203,7 +203,7 @@
 		<div class="flex h-full items-center justify-center bg-gray-50 dark:bg-gray-900">
 			<div class="text-center">
 				<LoadingSpinner size="lg" />
-				<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Cargando editor avanzado...</p>
+				<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Cargando editor avanzado...</p>
 			</div>
 		</div>
 	{:else if error}
@@ -215,7 +215,7 @@
 					{m['monacoEditor.loadErrorTitle']()}
 				</p>
 				<p class="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
-				<p class="mt-2 text-xs text-gray-600 dark:text-gray-400">Por favor usa el editor simple</p>
+				<p class="mt-2 text-xs text-gray-600 dark:text-gray-300">Por favor usa el editor simple</p>
 			</div>
 		</div>
 	{:else}

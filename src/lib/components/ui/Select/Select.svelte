@@ -104,7 +104,7 @@
 
 		<!-- Icono de flecha personalizado -->
 		<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-			<ChevronDown size={20} class="text-gray-400 dark:text-gray-500" />
+			<ChevronDown size={20} class="text-gray-500 dark:text-gray-500" />
 		</div>
 	</div>
 
@@ -114,7 +114,7 @@
 			{error}
 		</p>
 	{:else if help}
-		<p class="text-sm text-gray-500 dark:text-gray-400">{help}</p>
+		<p class="text-sm text-gray-500 dark:text-gray-300">{help}</p>
 	{/if}
 </div>
 

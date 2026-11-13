@@ -11,7 +11,14 @@
 	import { TextInput, Select } from '../ui';
 	import { dynamoDbApi } from '../../services/api-client.js';
 	import { notifySuccess, notifyError } from '../../stores/notifications.js';
-	import { Search, Play, Download, CircleAlert } from 'lucide-svelte';
+	import {
+		queryHistory,
+		addQueryToHistory,
+		removeFromHistory,
+		clearHistory,
+		getHistoryForTable
+	} from '../../stores/query-history.js';
+	import { Search, Play, Download, CircleAlert, History, Trash2, X } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	/**
@@ -40,6 +47,10 @@
 	let viewMode = $state(/** @type {'table' | 'json'} */ ('table'));
 	let editorOpen = $state(false);
 	let editingRecord = $state(/** @type {Object | null} */ (null));
+
+	/** Estado del panel de historial */
+	let historyOpen = $state(false);
+	let tableHistory = $derived(getHistoryForTable($queryHistory, tableName));
 
 	/** Estados de confirmación de eliminación */
 	let deleteConfirmOpen = $state(false);
@@ -170,6 +181,14 @@
 
 			if (response.success) {
 				results = response.data.items || [];
+				// Guardar en historial
+				addQueryToHistory({
+					tableName,
+					connectionId,
+					operation: queryConfig.operation,
+					config: { ...queryConfig },
+					resultCount: results.length
+				});
 			} else {
 				error = response.error || 'Error ejecutando operación';
 			}
@@ -317,6 +336,17 @@
 			handleTableIndexChange();
 		}
 	});
+
+	/**
+	 * Cargar una query del historial
+	 * @param {import('../../stores/query-history.js').QueryHistoryEntry} entry
+	 */
+	function loadFromHistory(entry) {
+		queryConfig = { ...entry.config };
+		historyOpen = false;
+		// Ejecutar automáticamente
+		executeQuery();
+	}
 
 	/**
 	 * Manejar edición de registro
@@ -501,6 +531,14 @@
 				{/if}
 
 				<div class="flex gap-2">
+					<Button
+						variant="secondary"
+						onclick={() => (historyOpen = !historyOpen)}
+						disabled={tableHistory.length === 0}
+					>
+						<History size={16} />
+						Historial ({tableHistory.length})
+					</Button>
 					<Button variant="secondary" onclick={exportResults} disabled={results.length === 0}>
 						<Download size={16} />
 						Exportar
@@ -513,6 +551,81 @@
 			</div>
 		</div>
 	</div>
+	<!-- Panel de historial -->
+	{#if historyOpen}
+		<div
+			class="border-b border-gray-200 bg-blue-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-800/80"
+		>
+			<div class="mb-2 flex items-center justify-between">
+				<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+					>Historial de queries — {tableName}</span
+				>
+				<div class="flex gap-2">
+					{#if tableHistory.length > 0}
+						<button
+							class="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+							onclick={() => {
+								clearHistory();
+								historyOpen = false;
+							}}
+						>
+							Limpiar todo
+						</button>
+					{/if}
+					<button
+						class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-200"
+						onclick={() => (historyOpen = false)}
+						aria-label="Cerrar historial"
+					>
+						<X size={16} />
+					</button>
+				</div>
+			</div>
+			<div class="max-h-48 space-y-1 overflow-y-auto">
+				{#each tableHistory as entry (entry.id)}
+					<div
+						class="flex items-center justify-between rounded px-3 py-2 text-sm hover:bg-blue-100 dark:hover:bg-gray-700"
+					>
+						<button
+							class="flex-1 text-left"
+							onclick={() => loadFromHistory(entry)}
+						>
+							<span
+								class="mr-2 inline-block rounded px-1.5 py-0.5 text-xs font-medium {entry.operation ===
+								'query'
+									? 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+									: 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300'}"
+							>
+								{entry.operation === 'query' ? 'Query' : 'Scan'}
+							</span>
+							<span class="text-gray-700 dark:text-gray-300">
+								{#if entry.operation === 'query' && entry.config.partitionValue}
+									{entry.config.partitionKey} = {entry.config.partitionValue}
+								{:else}
+									Limit: {entry.config.limit}
+								{/if}
+							</span>
+							<span class="ml-2 text-xs text-gray-500 dark:text-gray-300">
+								({entry.resultCount} results) — {new Date(entry.timestamp).toLocaleTimeString()}
+							</span>
+						</button>
+						<button
+							class="ml-2 text-gray-500 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+							onclick={() => removeFromHistory(entry.id)}
+							aria-label="Eliminar del historial"
+						>
+							<Trash2 size={14} />
+						</button>
+					</div>
+				{:else}
+					<p class="py-2 text-center text-sm text-gray-500 dark:text-gray-300">
+						No hay queries en el historial para esta tabla
+					</p>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Configuración -->
 	<div
 		class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50"
@@ -607,7 +720,7 @@
 								>
 							</span>
 							<span
-								class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+								class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-300"
 								>Opcional</span
 							>
 						</div>
@@ -617,7 +730,7 @@
 								: 'grid-cols-2'}"
 						>
 							<div>
-								<label for="sk-operator" class="mb-1 block text-xs text-gray-500 dark:text-gray-400"
+								<label for="sk-operator" class="mb-1 block text-xs text-gray-500 dark:text-gray-300"
 									>Condición</label
 								>
 								<Select
@@ -627,7 +740,7 @@
 								/>
 							</div>
 							<div>
-								<label for="sk-value" class="mb-1 block text-xs text-gray-500 dark:text-gray-400">
+								<label for="sk-value" class="mb-1 block text-xs text-gray-500 dark:text-gray-300">
 									{queryConfig.sortKeyOperator === 'between' ? 'Valor desde' : 'Valor'}
 								</label>
 								<TextInput
@@ -638,7 +751,7 @@
 							</div>
 							{#if queryConfig.sortKeyOperator === 'between'}
 								<div>
-									<label for="sk-value2" class="mb-1 block text-xs text-gray-500 dark:text-gray-400"
+									<label for="sk-value2" class="mb-1 block text-xs text-gray-500 dark:text-gray-300"
 										>Valor hasta</label
 									>
 									<TextInput
@@ -689,8 +802,8 @@
 			{#if isLoading}
 				<div class="flex h-full items-center justify-center">
 					<div class="text-center">
-						<Search size={48} class="mx-auto mb-4 animate-pulse text-gray-400 dark:text-gray-500" />
-						<p class="text-gray-600 dark:text-gray-400">
+						<Search size={48} class="mx-auto mb-4 animate-pulse text-gray-500 dark:text-gray-500" />
+						<p class="text-gray-600 dark:text-gray-300">
 							Ejecutando {queryConfig.operation === 'scan' ? 'examen' : 'consulta'}...
 						</p>
 					</div>
@@ -718,11 +831,11 @@
 				<!-- Estado inicial -->
 				<div class="flex h-full items-center justify-center">
 					<div class="max-w-md text-center">
-						<Search size={48} class="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+						<Search size={48} class="mx-auto mb-4 text-gray-500 dark:text-gray-500" />
 						<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
 							{queryConfig.operation === 'scan' ? 'Configurar examen' : 'Configurar consulta'}
 						</h3>
-						<div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+						<div class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
 							{#if queryConfig.operation === 'scan'}
 								<p>Configure el límite y filtros opcionales, luego haga clic en "Ejecutar"</p>
 							{:else}

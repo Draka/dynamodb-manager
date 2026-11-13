@@ -211,7 +211,7 @@
 						</span>
 					{/if}
 					<button
-						class="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+						class="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
 						onclick={handleClose}
 						title={m['button.close']()}
 					>

@@ -166,7 +166,7 @@
 	 */
 	function getValueType(value) {
 		if (value === null || value === undefined) {
-			return 'text-gray-400 dark:text-gray-500 italic';
+			return 'text-gray-500 dark:text-gray-500 italic';
 		}
 
 		if (typeof value === 'number') {
@@ -495,7 +495,7 @@
 							title={m['record.actionsTitle']()}
 						>
 							<div class="flex items-center justify-center">
-								<Ellipsis size={16} class="text-gray-400 dark:text-gray-400" aria-hidden="true" />
+								<Ellipsis size={16} class="text-gray-500 dark:text-gray-300" aria-hidden="true" />
 							</div>
 						</th>
 					{/if}
@@ -534,7 +534,7 @@
 								{#if isNumeric && !isPK}
 									<MapPin
 										size={12}
-										class="text-gray-400"
+										class="text-gray-500"
 										aria-label={m['record.numericColumnAriaLabel']()}
 									/>
 								{/if}
@@ -612,7 +612,7 @@
 									{#if onEditRecord}
 										<button
 											type="button"
-											class="rounded-md p-1.5 text-gray-400 opacity-0 transition-all group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+											class="rounded-md p-1.5 text-gray-500 opacity-0 transition-all group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
 											onclick={() => onEditRecord?.(record)}
 											title={m['record.edit']()}
 											aria-label={m['record.editAriaLabel']()}
@@ -624,7 +624,7 @@
 									{#if onDeleteRecord}
 										<button
 											type="button"
-											class="rounded-md p-1.5 text-gray-400 opacity-0 transition-all group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600 dark:text-gray-500 dark:hover:bg-red-900 dark:hover:text-red-400"
+											class="rounded-md p-1.5 text-gray-500 opacity-0 transition-all group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600 dark:text-gray-500 dark:hover:bg-red-900 dark:hover:text-red-400"
 											onclick={() => onDeleteRecord?.(record)}
 											title={m['record.delete']()}
 											aria-label={m['record.deleteAriaLabel']()}
@@ -642,8 +642,11 @@
 							{@const valueClass = getValueType(value)}
 							{@const isEditing =
 								editingCell?.recordIndex === index && editingCell?.column === column}
-							{@const canEditInline = isEditableInline(value) && onUpdateField}
 							{@const isPK = isPrimaryKeyColumn(column)}
+							<!-- Las claves primarias no se editan inline: un PutItem con la clave
+							     nueva dejaría el registro original duplicado. Se editan desde el
+							     editor completo, que sí elimina el original al cambiar la clave. -->
+							{@const canEditInline = isEditableInline(value) && onUpdateField && !isPK}
 							{@const cellBg = isPK
 								? selectedRows.has(index)
 									? 'bg-blue-100 dark:bg-blue-950'
@@ -704,7 +707,7 @@
 										{#if value !== null && value !== undefined}
 											<button
 												type="button"
-												class="text-gray-400 opacity-0 transition-all group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-600 focus:opacity-100 dark:text-gray-500 dark:hover:text-gray-300"
+												class="text-gray-500 opacity-0 transition-all group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-600 focus:opacity-100 dark:text-gray-500 dark:hover:text-gray-300"
 												onclick={() => copyToClipboard(value)}
 												title={m['record.copy']()}
 												aria-label={m['record.copyAriaLabel']()}
@@ -730,7 +733,7 @@
 				<span class="text-gray-600 dark:text-gray-300">
 					Mostrando {visibleRecords().length} de {records.length} registros
 				</span>
-				<span class="text-gray-500 dark:text-gray-400">
+				<span class="text-gray-500 dark:text-gray-300">
 					{columns().length} columnas
 				</span>
 				{#if selectedRows.size > 0}

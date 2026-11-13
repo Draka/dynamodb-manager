@@ -69,7 +69,7 @@
 								{title}
 							</h3>
 							{#if subtitle}
-								<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+								<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">
 									{subtitle}
 								</p>
 							{/if}
@@ -78,7 +78,7 @@
 
 					<ChevronDown
 						size={20}
-						class="transform text-gray-400 transition-transform duration-200 dark:text-gray-500 {collapsed
+						class="transform text-gray-500 transition-transform duration-200 dark:text-gray-500 {collapsed
 							? 'rotate-0'
 							: 'rotate-180'}"
 					/>
@@ -94,7 +94,7 @@
 							{title}
 						</h3>
 						{#if subtitle}
-							<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+							<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">
 								{subtitle}
 							</p>
 						{/if}

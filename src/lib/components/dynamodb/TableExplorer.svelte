@@ -397,11 +397,11 @@
 	<!-- Estado sin conexión -->
 	{#if !connection}
 		<div class="py-12 text-center">
-			<Lock size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
+			<Lock size={48} class="mx-auto text-gray-500 dark:text-gray-500" />
 			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
 				{m['table.noConnection']()}
 			</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">
 				{m['table.selectConnection']()}
 			</p>
 		</div>
@@ -417,7 +417,7 @@
 			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
 				{m['table.errorLoading']()}
 			</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{tablesError}</p>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">{tablesError}</p>
 			<div class="mt-6">
 				<Button variant="primary" onclick={refreshTables}>{m['table.retry']()}</Button>
 			</div>
@@ -425,27 +425,27 @@
 	{:else if filteredTables.length === 0 && tables.length === 0}
 		<!-- Sin tablas -->
 		<div class="py-12 text-center">
-			<Table size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
+			<Table size={48} class="mx-auto text-gray-500 dark:text-gray-500" />
 			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
 				{m['table.noTables']()}
 			</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{m['table.noTablesFound']()}</p>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">{m['table.noTablesFound']()}</p>
 		</div>
 	{:else if filteredTables.length === 0}
 		<!-- Sin resultados de búsqueda -->
 		<div class="py-12 text-center">
-			<Search size={48} class="mx-auto text-gray-400 dark:text-gray-500" />
+			<Search size={48} class="mx-auto text-gray-500 dark:text-gray-500" />
 			<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
 				{m['table.noResults']()}
 			</h3>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">
 				{m['table.noResultsFor']({ search: searchTerm })}
 			</p>
 		</div>
 	{:else}
 		<!-- Lista de tablas -->
 		<div class="flex-1 space-y-2 overflow-y-auto p-2">
-			<div class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+			<div class="mb-3 text-sm text-gray-500 dark:text-gray-300">
 				{m['table.showing']({ count: filteredTables.length, total: tables.length })}
 			</div>
 
@@ -518,7 +518,7 @@
 
 							<!-- Información de la tabla -->
 							{#if isLoadingDetails}
-								<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+								<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-300">
 									<LoadingSpinner size="sm" />
 									<span>{m['table.loadingDetails']()}</span>
 								</div>
@@ -568,7 +568,7 @@
 									</div>
 								</div>
 							{:else}
-								<div class="text-sm text-gray-500 dark:text-gray-400">
+								<div class="text-sm text-gray-500 dark:text-gray-300">
 									{m['table.clickToLoad']()}
 								</div>
 							{/if}

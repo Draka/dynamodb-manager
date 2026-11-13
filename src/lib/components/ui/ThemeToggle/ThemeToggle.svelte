@@ -68,7 +68,7 @@
 {#if variant === 'button'}
 	<!-- Botón simple de toggle -->
 	<button
-		class="flex items-center justify-center rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100 {className}"
+		class="flex items-center justify-center rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100 {className}"
 		onclick={cycleTheme}
 		title={tooltip}
 		{...props}

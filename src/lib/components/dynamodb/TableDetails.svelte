@@ -103,7 +103,7 @@
 			case 'DELETING':
 				return 'text-red-700 bg-red-100 dark:text-red-400 dark:bg-red-900/30';
 			default:
-				return 'text-gray-700 bg-gray-100 dark:text-gray-400 dark:bg-gray-700';
+				return 'text-gray-700 bg-gray-100 dark:text-gray-300 dark:bg-gray-700';
 		}
 	}
 
@@ -135,7 +135,7 @@
 		<div class="flex h-full items-center justify-center">
 			<div class="text-center">
 				<LoadingSpinner size="lg" />
-				<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+				<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
 					Cargando detalles de la tabla...
 				</p>
 			</div>
@@ -147,7 +147,7 @@
 				<h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">
 					Error cargando detalles
 				</h3>
-				<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{error}</p>
+				<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{error}</p>
 				<button
 					class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
 					onclick={loadTableDetails}
@@ -165,7 +165,7 @@
 				<div class="flex items-start justify-between">
 					<div>
 						<h1 class="text-2xl font-bold text-gray-900 dark:text-white">{tableName}</h1>
-						<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+						<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
 							Información detallada de la tabla DynamoDB
 						</p>
 					</div>
@@ -191,7 +191,7 @@
 							<Table size={20} class="text-blue-600 dark:text-blue-400" />
 						</div>
 						<div>
-							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Items</p>
+							<p class="text-sm font-medium text-gray-600 dark:text-gray-300">Items</p>
 							<p class="text-2xl font-semibold text-gray-900 dark:text-white">
 								{formatItemCount(tableInfo.ItemCount || 0)}
 							</p>
@@ -207,7 +207,7 @@
 							<HardDrive size={20} class="text-green-600 dark:text-green-400" />
 						</div>
 						<div>
-							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Tamaño</p>
+							<p class="text-sm font-medium text-gray-600 dark:text-gray-300">Tamaño</p>
 							<p class="text-2xl font-semibold text-gray-900 dark:text-white">
 								{formatSize(tableInfo.TableSizeBytes || 0)}
 							</p>
@@ -235,7 +235,7 @@
 							</svg>
 						</div>
 						<div>
-							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Claves</p>
+							<p class="text-sm font-medium text-gray-600 dark:text-gray-300">Claves</p>
 							<p class="text-2xl font-semibold text-gray-900 dark:text-white">
 								{keys?.rangeKey ? '2' : '1'}
 							</p>
@@ -268,7 +268,7 @@
 									</div>
 									<div>
 										<p class="font-medium text-gray-900 dark:text-white">Clave Primaria (Hash)</p>
-										<p class="text-sm text-gray-600 dark:text-gray-400">Clave de partición</p>
+										<p class="text-sm text-gray-600 dark:text-gray-300">Clave de partición</p>
 									</div>
 								</div>
 								<div class="flex-1">
@@ -290,7 +290,7 @@
 											<p class="font-medium text-gray-900 dark:text-white">
 												Clave de Ordenación (Range)
 											</p>
-											<p class="text-sm text-gray-600 dark:text-gray-400">Clave de ordenación</p>
+											<p class="text-sm text-gray-600 dark:text-gray-300">Clave de ordenación</p>
 										</div>
 									</div>
 									<div class="flex-1">
@@ -324,15 +324,15 @@
 								<thead class="bg-gray-50 dark:bg-gray-900">
 									<tr>
 										<th
-											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400"
+											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-300"
 											>Nombre</th
 										>
 										<th
-											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400"
+											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-300"
 											>Tipo</th
 										>
 										<th
-											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400"
+											class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-300"
 											>Uso</th
 										>
 									</tr>
@@ -366,7 +366,7 @@
 												</span>
 											</td>
 											<td
-												class="px-6 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400"
+												class="px-6 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-300"
 											>
 												{#if keys?.hashKey === attr.AttributeName}
 													<span
@@ -381,7 +381,7 @@
 														Clave Ordenación
 													</span>
 												{:else}
-													<span class="text-gray-400 dark:text-gray-500">Índice</span>
+													<span class="text-gray-500 dark:text-gray-500">Índice</span>
 												{/if}
 											</td>
 										</tr>
@@ -403,13 +403,13 @@
 				<div class="p-6">
 					<dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
-							<dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ARN de la tabla</dt>
+							<dt class="text-sm font-medium text-gray-500 dark:text-gray-300">ARN de la tabla</dt>
 							<dd class="mt-1 font-mono text-sm break-all text-gray-900 dark:text-gray-300">
 								{tableInfo.TableArn}
 							</dd>
 						</div>
 						<div>
-							<dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+							<dt class="text-sm font-medium text-gray-500 dark:text-gray-300">
 								Fecha de creación
 							</dt>
 							<dd class="mt-1 text-sm text-gray-900 dark:text-white">
@@ -417,13 +417,13 @@
 							</dd>
 						</div>
 						<div>
-							<dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Clase de tabla</dt>
+							<dt class="text-sm font-medium text-gray-500 dark:text-gray-300">Clase de tabla</dt>
 							<dd class="mt-1 text-sm text-gray-900 dark:text-white">
 								{tableInfo.TableClassSummary?.TableClass || 'STANDARD'}
 							</dd>
 						</div>
 						<div>
-							<dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+							<dt class="text-sm font-medium text-gray-500 dark:text-gray-300">
 								Modo de facturación
 							</dt>
 							<dd class="mt-1 text-sm text-gray-900 dark:text-white">
@@ -437,8 +437,8 @@
 	{:else}
 		<div class="flex h-full items-center justify-center">
 			<div class="text-center">
-				<Code size={48} class="mx-auto text-gray-400 dark:text-gray-600" />
-				<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+				<Code size={48} class="mx-auto text-gray-500 dark:text-gray-600" />
+				<p class="mt-2 text-sm text-gray-500 dark:text-gray-300">
 					Selecciona una tabla para ver sus detalles
 				</p>
 			</div>

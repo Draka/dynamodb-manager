@@ -92,8 +92,8 @@
 	<!-- Lista de conexiones -->
 	{#if $connections.length === 0}
 		<div class="py-8 text-center">
-			<HardDrive size={24} class="mx-auto {theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}" />
-			<p class="mt-3 text-sm {theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}">
+			<HardDrive size={24} class="mx-auto {theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}" />
+			<p class="mt-3 text-sm {theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}">
 				{m['connection.noConnections']()}
 			</p>
 		</div>
@@ -137,7 +137,7 @@
 							</div>
 
 							<!-- Información de la conexión -->
-							<div class="text-xs {theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}">
+							<div class="text-xs {theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}">
 								<div class="flex items-center gap-1">
 									<span>{connection.region}</span>
 									{#if connection.endpoint}
@@ -155,7 +155,7 @@
 								{#if onEditConnection}
 									<button
 										class="hover:bg-opacity-20 rounded p-1 {theme === 'dark'
-											? 'text-gray-400 hover:bg-white hover:text-white'
+											? 'text-gray-500 hover:bg-white hover:text-white'
 											: 'text-gray-500 hover:bg-gray-500 hover:text-gray-700'}"
 										onclick={(e) => editConnection(connection, e)}
 										title={m['connection.editAriaLabel']()}

@@ -65,7 +65,7 @@
 				<div class="mt-2 space-y-1">
 					{#each Object.entries(recordKeys) as [key, value] (key)}
 						<div class="flex items-center gap-2">
-							<span class="font-mono text-xs text-gray-600 dark:text-gray-400">{key}:</span>
+							<span class="font-mono text-xs text-gray-600 dark:text-gray-300">{key}:</span>
 							<span class="font-mono text-sm text-gray-900 dark:text-white">
 								{typeof value === 'object' ? JSON.stringify(value) : value}
 							</span>

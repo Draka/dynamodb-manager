@@ -6,10 +6,6 @@
 	import { Tabs } from '../ui/Tabs';
 	import { DataTabs } from '../ui/DataTabs';
 	import TableExplorer from '../dynamodb/TableExplorer.svelte';
-	import RecordViewer from '../dynamodb/RecordViewer.svelte';
-	import TableDetails from '../dynamodb/TableDetails.svelte';
-	import TableInfo from '../dynamodb/TableInfo.svelte';
-	import QueryBuilder from '../dynamodb/QueryBuilder.svelte';
 	import {
 		connectionTabs,
 		activeConnectionId,
@@ -21,7 +17,13 @@
 		updateConnectionTables
 	} from '../../stores/open-connections.js';
 	import { dynamoDbApi } from '../../services/api-client.js';
-	import { HardDrive, Table } from 'lucide-svelte';
+	import { HardDrive, Table, Loader } from 'lucide-svelte';
+
+	// Lazy loading: importar componentes pesados bajo demanda
+	const LazyRecordViewer = () => import('../dynamodb/RecordViewer.svelte');
+	const LazyQueryBuilder = () => import('../dynamodb/QueryBuilder.svelte');
+	const LazyTableDetails = () => import('../dynamodb/TableDetails.svelte');
+	const LazyTableInfo = () => import('../dynamodb/TableInfo.svelte');
 
 	/** Pestañas de datos disponibles */
 	const dataTabs = [
@@ -183,14 +185,14 @@
 		<!-- Estado inicial sin conexiones -->
 		<div class="flex h-full items-center justify-center bg-gray-50 dark:bg-gray-900">
 			<div class="text-center">
-				<HardDrive size={24} class="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+				<HardDrive size={24} class="mx-auto mb-4 text-gray-500 dark:text-gray-500" />
 				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
 					Bienvenido a DynamoDB Manager
 				</h3>
 				<p class="mb-6 max-w-sm text-gray-600 dark:text-gray-300">
 					Conecta a una base de datos DynamoDB para comenzar a explorar tus tablas y datos.
 				</p>
-				<p class="text-sm text-gray-500 dark:text-gray-400">
+				<p class="text-sm text-gray-500 dark:text-gray-300">
 					Usa el panel lateral para crear o seleccionar una conexión.
 				</p>
 			</div>
@@ -245,25 +247,41 @@
 							>
 								<div class="h-full flex-1 overflow-hidden p-4">
 									{#if $activeConnection.activeDataTab === 'table'}
-										<RecordViewer
-											tableName={$activeConnection.selectedTable}
-											connectionId={$activeConnectionId}
-										/>
+										{#await LazyRecordViewer() then mod}
+											<mod.default
+												tableName={$activeConnection.selectedTable}
+												connectionId={$activeConnectionId}
+											/>
+										{:catch}
+											<p class="text-red-500">Error cargando visor de registros</p>
+										{/await}
 									{:else if $activeConnection.activeDataTab === 'details'}
-										<TableDetails tableName={$activeConnection.selectedTable} />
+										{#await LazyTableDetails() then mod}
+											<mod.default tableName={$activeConnection.selectedTable} />
+										{:catch}
+											<p class="text-red-500">Error cargando detalles</p>
+										{/await}
 									{:else if $activeConnection.activeDataTab === 'query'}
-										<QueryBuilder
-											tableName={$activeConnection.selectedTable}
-											connectionId={$activeConnectionId}
-										/>
+										{#await LazyQueryBuilder() then mod}
+											<mod.default
+												tableName={$activeConnection.selectedTable}
+												connectionId={$activeConnectionId}
+											/>
+										{:catch}
+											<p class="text-red-500">Error cargando query builder</p>
+										{/await}
 									{:else if $activeConnection.activeDataTab === 'info'}
-										<TableInfo tableName={$activeConnection.selectedTable} />
+										{#await LazyTableInfo() then mod}
+											<mod.default tableName={$activeConnection.selectedTable} />
+										{:catch}
+											<p class="text-red-500">Error cargando info</p>
+										{/await}
 									{/if}
 								</div>
 							</DataTabs>
 						{:else}
 							<!-- Estado sin tabla seleccionada -->
-							<div class="flex h-full items-center justify-center text-gray-500 dark:text-gray-400">
+							<div class="flex h-full items-center justify-center text-gray-500 dark:text-gray-300">
 								<div class="text-center">
 									<Table size={24} class="mx-auto mb-4" />
 									<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">

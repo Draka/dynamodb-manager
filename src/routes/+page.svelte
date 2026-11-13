@@ -196,7 +196,7 @@
 		<div class="flex-1 overflow-y-auto">
 			<div class="p-4">
 				<h2
-					class="mb-3 text-sm font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400"
+					class="mb-3 text-sm font-medium tracking-wide text-gray-600 uppercase dark:text-gray-300"
 				>
 					{m['navigation.connections']()}
 				</h2>

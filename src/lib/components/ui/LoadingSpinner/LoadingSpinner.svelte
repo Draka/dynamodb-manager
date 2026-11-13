@@ -35,7 +35,7 @@
 	const colorClasses = {
 		blue: 'text-blue-600 dark:text-blue-400',
 		white: 'text-white',
-		gray: 'text-gray-600 dark:text-gray-400'
+		gray: 'text-gray-600 dark:text-gray-300'
 	};
 
 	/** Clases del contenedor */
@@ -59,7 +59,7 @@
 
 	<!-- Texto de carga -->
 	{#if text}
-		<span class="text-sm text-gray-600 dark:text-gray-400">{text}</span>
+		<span class="text-sm text-gray-600 dark:text-gray-300">{text}</span>
 	{/if}
 
 	<!-- Contenido adicional -->

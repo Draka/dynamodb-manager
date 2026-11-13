@@ -213,7 +213,7 @@
 	<!-- Información de atajos -->
 	{#if isFullscreen}
 		<div
-			class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+			class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
 		>
 			<span class="font-medium">Editor JSON avanzado</span> con syntax highlighting y autocompletado
 		</div>
